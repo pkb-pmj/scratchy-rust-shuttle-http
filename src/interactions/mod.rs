@@ -1,3 +1,5 @@
+mod commands;
+
 use axum::{
     body::Body,
     extract::State,
@@ -8,13 +10,14 @@ use axum::{
 use ed25519_dalek::{PublicKey, Verifier};
 use hyper::body::to_bytes;
 use twilight_model::{
-    application::interaction::{Interaction, InteractionType},
+    application::interaction::{Interaction, InteractionData, InteractionType},
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
 
 pub enum InteractionError {
     InvalidRequest,
     InvalidSignature,
+    NotImplemented,
 }
 
 impl IntoResponse for InteractionError {
@@ -22,12 +25,13 @@ impl IntoResponse for InteractionError {
         match self {
             Self::InvalidRequest => StatusCode::BAD_REQUEST,
             Self::InvalidSignature => StatusCode::UNAUTHORIZED,
+            Self::NotImplemented => StatusCode::NOT_IMPLEMENTED,
         }
         .into_response()
     }
 }
 
-pub async fn handle_interaction(
+pub async fn interaction_handler(
     State(public_key): State<PublicKey>,
     req: axum::http::Request<Body>,
 ) -> Result<Json<InteractionResponse>, InteractionError> {
@@ -56,16 +60,30 @@ pub async fn handle_interaction(
 
     let interaction = serde_json::from_slice::<Interaction>(&body_bytes).unwrap();
 
-    let res = match interaction.kind {
-        InteractionType::Ping => InteractionResponse {
-            kind: InteractionResponseType::Pong,
-            data: None,
-        },
-        _ => InteractionResponse {
-            kind: InteractionResponseType::Pong,
-            data: None,
-        },
-    };
+    let res = router(interaction).await?;
 
     Ok(Json(res))
+}
+
+async fn router(interaction: Interaction) -> Result<InteractionResponse, InteractionError> {
+    match interaction.kind {
+        InteractionType::Ping => Ok(InteractionResponse {
+            kind: InteractionResponseType::Pong,
+            data: None,
+        }),
+        InteractionType::ApplicationCommand => match interaction.data {
+            Some(InteractionData::ApplicationCommand(data)) => match data.name.as_str() {
+                "ping" => commands::ping::run().await,
+                _ => Err(InteractionError::NotImplemented),
+            },
+            _ => Err(InteractionError::InvalidRequest),
+        },
+        InteractionType::MessageComponent => match interaction.data {
+            Some(InteractionData::MessageComponent(data)) => match data.custom_id.as_str() {
+                _ => Err(InteractionError::NotImplemented),
+            },
+            _ => Err(InteractionError::InvalidRequest),
+        },
+        _ => Err(InteractionError::NotImplemented),
+    }
 }

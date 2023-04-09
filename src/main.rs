@@ -5,8 +5,9 @@ use axum::{
     Router,
 };
 use ed25519_dalek::PublicKey;
-use interactions::handle_interaction;
 use shuttle_secrets::SecretStore;
+
+use interactions::interaction_handler;
 
 async fn hello_world() -> &'static str {
     "Hello, world!"
@@ -20,7 +21,7 @@ async fn axum(#[shuttle_secrets::Secrets] secrets: SecretStore) -> shuttle_axum:
 
     let router = Router::new()
         .route("/hello", get(hello_world))
-        .route("/interactions", post(handle_interaction))
+        .route("/interactions", post(interaction_handler))
         .with_state(discord_public_key);
 
     Ok(router.into())
