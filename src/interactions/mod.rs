@@ -1,4 +1,5 @@
 mod commands;
+pub mod register;
 
 use axum::{
     body::Body,
