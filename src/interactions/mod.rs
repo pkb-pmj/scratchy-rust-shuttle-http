@@ -64,20 +64,24 @@ pub async fn interaction_handler(
 
     let interaction = serde_json::from_slice::<Interaction>(&body_bytes).unwrap();
 
-    let res = router(interaction).await?;
+    let res = router(interaction, state).await?;
 
     Ok(Json(res))
 }
 
-async fn router(interaction: Interaction) -> Result<InteractionResponse, InteractionError> {
+async fn router(
+    interaction: Interaction,
+    state: AppState,
+) -> Result<InteractionResponse, InteractionError> {
     match interaction.kind {
         InteractionType::Ping => Ok(InteractionResponse {
             kind: InteractionResponseType::Pong,
             data: None,
         }),
         InteractionType::ApplicationCommand => match interaction.data {
-            Some(InteractionData::ApplicationCommand(data)) => match data.name.as_str() {
+            Some(InteractionData::ApplicationCommand(ref data)) => match data.name.as_str() {
                 "ping" => commands::ping::run().await,
+                "user" => commands::user::run(data, state).await,
                 _ => Err(InteractionError::NotImplemented),
             },
             _ => unreachable!(),
