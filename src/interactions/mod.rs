@@ -80,6 +80,7 @@ async fn router(
         }),
         InteractionType::ApplicationCommand => match interaction.data {
             Some(InteractionData::ApplicationCommand(ref data)) => match data.name.as_str() {
+                "about" => commands::about::run().await,
                 "ping" => commands::ping::run().await,
                 "user" => commands::user::run(data, state).await,
                 _ => Err(InteractionError::NotImplemented),
