@@ -1948,6 +1948,7 @@ dependencies = [
  "shuttle-axum",
  "shuttle-runtime",
  "shuttle-secrets",
+ "thiserror",
  "tokio",
  "twilight-http",
  "twilight-model",
