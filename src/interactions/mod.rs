@@ -7,12 +7,14 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use ed25519_dalek::{PublicKey, Verifier};
+use ed25519_dalek::Verifier;
 use hyper::body::to_bytes;
 use twilight_model::{
     application::interaction::{Interaction, InteractionData, InteractionType},
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
+
+use crate::state::AppState;
 
 pub enum InteractionError {
     InvalidRequest,
@@ -32,7 +34,7 @@ impl IntoResponse for InteractionError {
 }
 
 pub async fn interaction_handler(
-    State(public_key): State<PublicKey>,
+    State(state): State<AppState>,
     req: axum::http::Request<Body>,
 ) -> Result<Json<InteractionResponse>, InteractionError> {
     let headers = req.headers();
@@ -51,7 +53,8 @@ pub async fn interaction_handler(
 
     let body_bytes = to_bytes(req).await.unwrap();
 
-    public_key
+    state
+        .discord_public_key
         .verify(
             vec![timestamp.as_bytes(), &body_bytes].concat().as_ref(),
             &signature,
