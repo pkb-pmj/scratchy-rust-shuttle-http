@@ -80,13 +80,13 @@ async fn router(interaction: Interaction) -> Result<InteractionResponse, Interac
                 "ping" => commands::ping::run().await,
                 _ => Err(InteractionError::NotImplemented),
             },
-            _ => Err(InteractionError::InvalidRequest),
+            _ => unreachable!(),
         },
         InteractionType::MessageComponent => match interaction.data {
             Some(InteractionData::MessageComponent(data)) => match data.custom_id.as_str() {
                 _ => Err(InteractionError::NotImplemented),
             },
-            _ => Err(InteractionError::InvalidRequest),
+            _ => unreachable!(),
         },
         _ => Err(InteractionError::NotImplemented),
     }
