@@ -1,4 +1,5 @@
 mod interactions;
+mod scratch;
 mod state;
 
 use axum::{
