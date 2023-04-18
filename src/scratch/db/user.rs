@@ -1,7 +1,6 @@
 use serde::Deserialize;
-use serde::Serialize;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct User {
     pub username: String,
     pub id: Option<i64>,
@@ -21,7 +20,7 @@ impl User {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Statistics {
     pub ranks: Ranks,
     pub loves: i64,
@@ -32,7 +31,7 @@ pub struct Statistics {
     pub following: i64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Ranks {
     pub country: Country,
     pub loves: i64,
@@ -43,7 +42,7 @@ pub struct Ranks {
     pub following: i64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Country {
     pub loves: i64,
     pub favorites: i64,
