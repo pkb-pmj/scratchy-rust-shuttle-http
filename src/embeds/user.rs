@@ -60,9 +60,9 @@ impl ExtendLocaleEmbed for db::User {
 
         if let Some(stats) = &self.statistics {
             embed = embed
-                .field(stats.to_locale_embed_field(locale))
-                .field(stats.ranks.to_locale_embed_field(locale))
-                .field(stats.ranks.country.to_locale_embed_field(locale));
+                .field(stats.to_locale_embed_field(locale).inline())
+                .field(stats.ranks.to_locale_embed_field(locale).inline())
+                .field(stats.ranks.country.to_locale_embed_field(locale).inline());
         }
 
         embed
