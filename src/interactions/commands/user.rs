@@ -3,17 +3,18 @@ use twilight_model::{
         command::{Command, CommandType},
         interaction::application_command::{CommandData, CommandOptionValue},
     },
-    http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
+    http::interaction::{InteractionResponse, InteractionResponseType},
 };
 use twilight_util::builder::{
     command::{CommandBuilder, StringBuilder},
-    embed::{EmbedAuthorBuilder, EmbedBuilder, EmbedFieldBuilder, ImageSource},
+    embed::EmbedBuilder,
     InteractionResponseDataBuilder,
 };
 
 use crate::{
     interactions::InteractionError,
-    scratch::{api, get, ScratchAPIError},
+    locales::{ExtendLocaleEmbed, Locale},
+    scratch::{api, db, get},
     state::AppState,
 };
 
@@ -37,6 +38,7 @@ pub fn register() -> Command {
 pub async fn run(
     data: &Box<CommandData>,
     state: AppState,
+    locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
     let username = match &data
         .options
@@ -49,37 +51,22 @@ pub async fn run(
         _ => unreachable!("expected option 'username' to be of type String"),
     };
 
-    let user: api::User = match get(state.client, api::User::url(username)).await {
-        Ok(value) => value,
-        Err(err) => {
-            return Ok(InteractionResponse {
-                kind: InteractionResponseType::ChannelMessageWithSource,
-                data: Some(InteractionResponseData {
-                    content: Some(match err {
-                        ScratchAPIError::NotFound => "Not found".into(),
-                        ScratchAPIError::Other(_) => "Scratch API error".into(),
-                    }),
-                    ..Default::default()
-                }),
-            })
-        }
-    };
+    let (api_user, db_user) = tokio::join!(
+        get::<api::User>(state.client.clone(), api::User::url(username)),
+        get::<db::User>(state.client.clone(), db::User::url(username)),
+    );
 
-    let embed = EmbedBuilder::new()
-        .author(
-            EmbedAuthorBuilder::new(&user.username)
-                .url(format!("https://scratch.mit.edu/users/{}", &user.username))
-                .icon_url(ImageSource::url(user.profile.images.n50x50).unwrap()),
-        )
-        .color(0xcc6600)
-        .field(EmbedFieldBuilder::new("About me", user.profile.bio))
-        .field(EmbedFieldBuilder::new(
-            "What I'm working on",
-            user.profile.status,
-        ))
-        .validate()
-        .unwrap()
-        .build();
+    let mut embed = EmbedBuilder::new().color(0xcc6600);
+
+    if let Ok(user) = api_user {
+        embed = user.extend_locale_embed(locale, embed);
+    }
+
+    if let Ok(user) = db_user {
+        embed = user.extend_locale_embed(locale, embed);
+    }
+
+    let embed = embed.validate().expect("failed to validate embed").build();
 
     let res = InteractionResponseDataBuilder::new()
         .embeds([embed])
