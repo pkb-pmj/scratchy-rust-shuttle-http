@@ -1,4 +1,5 @@
 mod interactions;
+mod locales;
 mod scratch;
 mod state;
 

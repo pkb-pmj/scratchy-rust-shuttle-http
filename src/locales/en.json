@@ -1,0 +1,9 @@
+{
+	"user.stats": "Stats",
+	"user.stats.loves": "Loves: {value}",
+	"user.stats.favorites": "Favorites: {value}",
+	"user.stats.comments": "Comments: {value}",
+	"user.stats.views": "Views: {value}",
+	"user.stats.followers": "Followers: {value}",
+	"user.stats.following": "Following: {value}"
+}

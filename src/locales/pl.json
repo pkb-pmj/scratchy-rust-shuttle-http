@@ -1,0 +1,9 @@
+{
+	"user.stats": "Statystyki",
+	"user.stats.loves": "Serca: {value}",
+	"user.stats.favorites": "Gwiazdki: {value}",
+	"user.stats.comments": "Komentarze: {value}",
+	"user.stats.views": "Wyświetlenia: {value}",
+	"user.stats.followers": "Śledzący: {value}",
+	"user.stats.following": "Śledzeni: {value}"
+}
