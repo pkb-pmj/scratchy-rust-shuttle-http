@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{de, Deserialize, Deserializer};
 use time::OffsetDateTime;
 use twilight_util::builder::embed::EmbedFieldBuilder;
 
@@ -14,7 +14,7 @@ pub struct User {
     pub country: Option<String>,
     pub bio: Option<String>,
     pub work: Option<String>,
-    pub status: Option<String>,
+    pub status: Option<Status>,
     pub school: Option<i64>,
     pub statistics: Option<Statistics>,
 }
@@ -22,6 +22,37 @@ pub struct User {
 impl User {
     pub fn url(username: &str) -> String {
         format!("https://scratchdb.lefty.one/v3/user/info/{username}")
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Status {
+    Scratcher,
+    NewScratcher,
+    TeacherAccount,
+    ScratchTeam,
+}
+
+const STATUS_VARIANTS: &'static [&'static str] = &[
+    "Scratcher",
+    "New Scratcher",
+    "Teacher Account",
+    "Scratch Team",
+];
+
+impl<'de> Deserialize<'de> for Status {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(match s.as_str() {
+            "Scratcher" => Self::Scratcher,
+            "New Scratcher" => Self::NewScratcher,
+            "Teacher Account" => Self::TeacherAccount,
+            "Scratch Team" => Self::ScratchTeam,
+            other => Err(de::Error::unknown_variant(other, STATUS_VARIANTS))?,
+        })
     }
 }
 
@@ -182,7 +213,7 @@ mod tests {
             country: Some("Poland".into()),
             bio: Some("♂ • † • F4F✖ • Polski • English<br>998 śledzi (wow)<br><br>Chyba już nic tutaj nie robię :/<br>Może kiedyś :)".into()),
             work: Some("Głownie projekty długoterminowe i serie:<br>Skoki Narciarskie 5 (Ski Jumping 5)<br>Flight Simulator 3D<br>Starship Simulator 3<br>Nowa Mapa Imperiów<br><br>Polecam:<br> <a href=\"/users/PMJ_MJBCS27\">@PMJ_MJBCS27</a><br> <a href=\"/users/PMJ_JPB14\">@PMJ_JPB14</a>".into()),
-            status: Some("Scratcher".into()),
+            status: Some(Status::Scratcher),
             school: None,
             statistics: Some(Statistics {
                 ranks: Ranks {
@@ -237,7 +268,7 @@ mod tests {
             country: Some("Poland".into()),
             bio: Some("Konto do nagradzania zwycięzców Miesiąca Wyzwań.".into()),
             work: Some("Miesiąc Wyzwań -  <a href=\"/users/norbert00\">@norbert00</a><br><a href=\"https://scratch.mit.edu/studios/26661367/\">https://scratch.mit.edu/studios/26661367/</a><br><br>Miesiąc Wyzwań 2 -  <a href=\"/users/PMJ_Studio\">@PMJ_Studio</a><br><a href=\"https://scratch.mit.edu/studios/29864749/\">https://scratch.mit.edu/studios/29864749/</a>".into()),
-            status: Some("New Scratcher".into()),
+            status: Some(Status::NewScratcher),
             school: None,
             statistics: None,
         };
@@ -269,7 +300,7 @@ mod tests {
             country: Some("Poland".into()),
             bio: Some("".into()),
             work: Some("".into()),
-            status: Some("New Scratcher".into()),
+            status: Some(Status::NewScratcher),
             school: Some(381205),
             statistics: None,
         };
@@ -325,7 +356,7 @@ mod tests {
             country: Some("Poland".into()),
             bio: Some("".into()),
             work: Some("".into()),
-            status: Some("Teacher Account".into()),
+            status: Some(Status::TeacherAccount),
             school: None,
             statistics: Some(Statistics {
                 ranks: Ranks {

@@ -1,4 +1,9 @@
 {
+	"user.status.scratcher": "Scratcher",
+	"user.status.new_scratcher": "Nowy Scratcher",
+	"user.status.student": "{status}, uczeń w szkole {school}",
+	"user.status.teacher": "Nauczyciel",
+	"user.status.scratch_team": "Scratch Team",
 	"user.stats": "Statystyki",
 	"user.stats.ranks": "Światowy ranking",
 	"user.stats.ranks.country": "Krajowy ranking",
