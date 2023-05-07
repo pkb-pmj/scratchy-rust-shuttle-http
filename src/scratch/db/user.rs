@@ -1,5 +1,8 @@
 use serde::Deserialize;
 use time::OffsetDateTime;
+use twilight_util::builder::embed::EmbedFieldBuilder;
+
+use crate::locales::{Locale, ToLocaleEmbedField, ToLocaleString};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct User {
@@ -52,6 +55,79 @@ pub struct Country {
     pub views: i64,
     pub followers: i64,
     pub following: i64,
+}
+
+impl ToLocaleString for Statistics {
+    fn to_locale_string(&self, locale: Locale) -> String {
+        let mut vec = Vec::with_capacity(6);
+
+        if let Some(loves) = self.loves {
+            vec.push(locale.user_stats_loves(&loves.to_string()));
+        }
+        if let Some(favorites) = self.favorites {
+            vec.push(locale.user_stats_favorites(&favorites.to_string()));
+        }
+        if let Some(comments) = self.comments {
+            vec.push(locale.user_stats_comments(&comments.to_string()));
+        }
+        if let Some(views) = self.views {
+            vec.push(locale.user_stats_views(&views.to_string()));
+        }
+
+        vec.push(locale.user_stats_followers(&self.followers.to_string()));
+        vec.push(locale.user_stats_following(&self.following.to_string()));
+
+        vec.join("\n")
+    }
+}
+
+impl ToLocaleEmbedField for Statistics {
+    fn to_locale_embed_field(&self, locale: Locale) -> EmbedFieldBuilder {
+        EmbedFieldBuilder::new(locale.user_stats(), self.to_locale_string(locale))
+    }
+}
+
+impl ToLocaleString for Ranks {
+    fn to_locale_string(&self, locale: Locale) -> String {
+        vec![
+            locale.user_stats_loves(&self.loves.to_string()),
+            locale.user_stats_favorites(&self.favorites.to_string()),
+            locale.user_stats_comments(&self.comments.to_string()),
+            locale.user_stats_views(&self.views.to_string()),
+            locale.user_stats_followers(&self.followers.to_string()),
+            locale.user_stats_following(&self.following.to_string()),
+        ]
+        .join("\n")
+    }
+}
+
+impl ToLocaleEmbedField for Ranks {
+    fn to_locale_embed_field(&self, locale: Locale) -> EmbedFieldBuilder {
+        EmbedFieldBuilder::new(locale.user_stats_ranks(), self.to_locale_string(locale))
+    }
+}
+
+impl ToLocaleString for Country {
+    fn to_locale_string(&self, locale: Locale) -> String {
+        vec![
+            locale.user_stats_loves(&self.loves.to_string()),
+            locale.user_stats_favorites(&self.favorites.to_string()),
+            locale.user_stats_comments(&self.comments.to_string()),
+            locale.user_stats_views(&self.views.to_string()),
+            locale.user_stats_followers(&self.followers.to_string()),
+            locale.user_stats_following(&self.following.to_string()),
+        ]
+        .join("\n")
+    }
+}
+
+impl ToLocaleEmbedField for Country {
+    fn to_locale_embed_field(&self, locale: Locale) -> EmbedFieldBuilder {
+        EmbedFieldBuilder::new(
+            locale.user_stats_ranks_country(),
+            self.to_locale_string(locale),
+        )
+    }
 }
 
 #[cfg(test)]

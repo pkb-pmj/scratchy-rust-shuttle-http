@@ -1,5 +1,7 @@
 {
 	"user.stats": "Stats",
+	"user.stats.ranks": "Global ranks",
+	"user.stats.ranks.country": "Country ranks",
 	"user.stats.loves": "Loves: {value}",
 	"user.stats.favorites": "Favorites: {value}",
 	"user.stats.comments": "Comments: {value}",

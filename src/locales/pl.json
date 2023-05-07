@@ -1,5 +1,7 @@
 {
 	"user.stats": "Statystyki",
+	"user.stats.ranks": "Światowy ranking",
+	"user.stats.ranks.country": "Krajowy ranking",
 	"user.stats.loves": "Serca: {value}",
 	"user.stats.favorites": "Gwiazdki: {value}",
 	"user.stats.comments": "Komentarze: {value}",
