@@ -5,6 +5,32 @@ use thiserror::Error;
 pub mod api;
 pub mod db;
 
+pub trait Requestable: for<'de> Deserialize<'de> {
+    type UrlArgs;
+
+    fn url(args: Self::UrlArgs) -> String;
+}
+
+#[derive(Clone)]
+pub struct ScratchClient(Client);
+
+impl ScratchClient {
+    pub fn new() -> Self {
+        Self(Client::new())
+    }
+
+    pub async fn get<T: Requestable>(&self, input: T::UrlArgs) -> Result<T, ScratchAPIError> {
+        Ok(self
+            .0
+            .get(T::url(input))
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?)
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum ScratchAPIError {
     #[error("Not found")]
@@ -20,17 +46,4 @@ impl From<Error> for ScratchAPIError {
             _ => ScratchAPIError::Other(value),
         }
     }
-}
-
-pub async fn get<T: for<'de> Deserialize<'de>>(
-    client: Client,
-    url: String,
-) -> Result<T, ScratchAPIError> {
-    Ok(client
-        .get(url)
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?)
 }

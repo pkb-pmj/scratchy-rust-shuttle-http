@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use time::OffsetDateTime;
 
+use crate::scratch::Requestable;
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct User {
     pub id: i64,
@@ -10,8 +12,10 @@ pub struct User {
     pub profile: Profile,
 }
 
-impl User {
-    pub fn url(username: &str) -> String {
+impl Requestable for User {
+    type UrlArgs = String;
+
+    fn url(username: Self::UrlArgs) -> String {
         format!("https://api.scratch.mit.edu/users/{username}")
     }
 }

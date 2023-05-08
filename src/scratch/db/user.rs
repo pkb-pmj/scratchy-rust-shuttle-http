@@ -1,6 +1,8 @@
 use serde::{de, Deserialize, Deserializer};
 use time::OffsetDateTime;
 
+use crate::scratch::Requestable;
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct User {
     pub username: String,
@@ -16,8 +18,10 @@ pub struct User {
     pub statistics: Option<Statistics>,
 }
 
-impl User {
-    pub fn url(username: &str) -> String {
+impl Requestable for User {
+    type UrlArgs = String;
+
+    fn url(username: Self::UrlArgs) -> String {
         format!("https://scratchdb.lefty.one/v3/user/info/{username}")
     }
 }

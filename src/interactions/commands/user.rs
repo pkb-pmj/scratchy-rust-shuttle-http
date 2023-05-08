@@ -14,7 +14,7 @@ use twilight_util::builder::{
 use crate::{
     interactions::InteractionError,
     locales::{ExtendLocaleEmbed, Locale},
-    scratch::{api, db, get},
+    scratch::{api, db, ScratchAPIError},
     state::AppState,
 };
 
@@ -52,8 +52,8 @@ pub async fn run(
     };
 
     let (api_user, db_user) = tokio::join!(
-        get::<api::User>(state.client.clone(), api::User::url(username)),
-        get::<db::User>(state.client.clone(), db::User::url(username)),
+        state.client.get::<api::User>(username.to_string()),
+        state.client.get::<db::User>(username.to_string()),
     );
 
     let mut embed = EmbedBuilder::new().color(0xcc6600);

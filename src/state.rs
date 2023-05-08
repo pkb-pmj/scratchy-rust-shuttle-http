@@ -1,12 +1,13 @@
 use ed25519_dalek::PublicKey;
-use reqwest::Client;
 use shuttle_secrets::SecretStore;
+
+use crate::scratch::ScratchClient;
 
 #[derive(Clone)]
 pub struct AppState {
     pub discord_public_key: PublicKey,
     pub discord_token: String,
-    pub client: Client,
+    pub client: ScratchClient,
 }
 
 impl AppState {
@@ -18,7 +19,7 @@ impl AppState {
 
         let discord_token = secrets.get("discord_token").unwrap();
 
-        let client = Client::new();
+        let client = ScratchClient::new();
 
         Self {
             discord_public_key,
