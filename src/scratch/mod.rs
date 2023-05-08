@@ -26,5 +26,11 @@ pub async fn get<T: for<'de> Deserialize<'de>>(
     client: Client,
     url: String,
 ) -> Result<T, ScratchAPIError> {
-    Ok(client.get(url).send().await?.json().await?)
+    Ok(client
+        .get(url)
+        .send()
+        .await?
+        .error_for_status()?
+        .json()
+        .await?)
 }
