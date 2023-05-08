@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use time::OffsetDateTime;
 
-use crate::scratch::Requestable;
+use crate::scratch::Url;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct User {
@@ -12,7 +12,7 @@ pub struct User {
     pub profile: Profile,
 }
 
-impl Requestable for User {
+impl Url for User {
     type UrlArgs = String;
 
     fn url(username: Self::UrlArgs) -> String {

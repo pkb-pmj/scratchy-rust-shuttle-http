@@ -5,11 +5,15 @@ use thiserror::Error;
 pub mod api;
 pub mod db;
 
-pub trait Requestable: for<'de> Deserialize<'de> {
+pub trait Url {
     type UrlArgs;
 
     fn url(args: Self::UrlArgs) -> String;
 }
+
+pub trait Requestable: Url + for<'de> Deserialize<'de> {}
+
+impl<T: Url + for<'de> Deserialize<'de>> Requestable for T {}
 
 #[derive(Clone)]
 pub struct ScratchClient(Client);
