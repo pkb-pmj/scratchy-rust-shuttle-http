@@ -4,6 +4,7 @@ use thiserror::Error;
 
 pub mod api;
 pub mod db;
+pub mod site;
 
 pub trait Url {
     type UrlArgs;
