@@ -2044,6 +2044,7 @@ dependencies = [
  "shuttle-axum",
  "shuttle-runtime",
  "shuttle-secrets",
+ "sqlx",
  "thiserror",
  "time",
  "tokio",
