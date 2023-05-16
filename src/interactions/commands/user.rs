@@ -12,6 +12,7 @@ use twilight_util::builder::{
 };
 
 use crate::{
+    embeds::Color,
     interactions::InteractionError,
     locales::{ExtendLocaleEmbed, Locale},
     scratch::{api, db, ScratchAPIError},
@@ -56,7 +57,7 @@ pub async fn run(
         state.client.get::<db::User>(username.to_string()),
     );
 
-    let mut embed = EmbedBuilder::new().color(0xcc6600);
+    let mut embed = EmbedBuilder::new().color(Color::Success.into());
 
     if let Ok(user) = api_user {
         embed = user.extend_locale_embed(locale, embed);
