@@ -40,6 +40,8 @@ impl ScratchClient {
 pub enum ScratchAPIError {
     #[error("Not found")]
     NotFound,
+    #[error("Server error")]
+    ServerError,
     #[error("Other")]
     Other(Error),
 }
@@ -48,6 +50,13 @@ impl From<Error> for ScratchAPIError {
     fn from(value: Error) -> Self {
         match value.status() {
             Some(StatusCode::NOT_FOUND) => ScratchAPIError::NotFound,
+            Some(status) => {
+                if status.is_server_error() {
+                    ScratchAPIError::ServerError
+                } else {
+                    ScratchAPIError::Other(value)
+                }
+            }
             _ => ScratchAPIError::Other(value),
         }
     }
