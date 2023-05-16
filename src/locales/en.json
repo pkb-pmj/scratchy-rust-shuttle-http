@@ -16,5 +16,11 @@
 	"user.stats.comments": "Comments: {value}",
 	"user.stats.views": "Views: {value}",
 	"user.stats.followers": "Followers: {value}",
-	"user.stats.following": "Following: {value}"
+	"user.stats.following": "Following: {value}",
+	"error.scratch_api": "Scratch API error",
+	"error.scratch_api.description": "Something went wrong on the Scratch API side. Try again in a few minutes or with different input. If it doesn't work, it might mean the Scratch API is temporarily unavailable.",
+	"error.internal": "Internal error",
+	"error.internal.description": "Something went wrong inside the bot. We'll fix it as soon as possible. If you know how to reproduce this bug or have some other relevant information, report it in the support server.",
+	"error.not_found": "Not Found",
+	"error.not_found.user": "User {user} doesn't exist."
 }
