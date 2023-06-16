@@ -1,0 +1,29 @@
+{
+  "db": "PostgreSQL",
+  "fa9c9dfd43885cdcee468470f12418831c43c1fc1c006809bd9575f44fa578a1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                SELECT username, id\n                FROM scratch_accounts\n                WHERE lower(username) = lower($1)\n            "
+  }
+}

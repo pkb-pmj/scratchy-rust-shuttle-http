@@ -1,7 +1,7 @@
 use thiserror::Error;
 use twilight_http::{response::DeserializeBodyError, Client, Error as TwilightHttpError};
 
-use super::commands::{about, ping, user};
+use super::commands::{about, link, ping, user};
 
 #[derive(Error, Debug)]
 pub enum RegisterCommandsError {
@@ -17,7 +17,12 @@ pub async fn register_commands(token: String) -> Result<(), RegisterCommandsErro
     let interaction_client = client.interaction(application.id);
 
     interaction_client
-        .set_global_commands(&[about::register(), ping::register(), user::register()])
+        .set_global_commands(&[
+            about::register(),
+            link::register(),
+            ping::register(),
+            user::register(),
+        ])
         .await?
         .model()
         .await?;
