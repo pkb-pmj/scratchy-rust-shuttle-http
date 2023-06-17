@@ -6,6 +6,8 @@ pub mod api;
 pub mod db;
 pub mod site;
 
+pub const STUDIO_URL: &str = "https://scratch.mit.edu/studios/29137750/comments";
+
 pub trait Url {
     type UrlArgs;
 
