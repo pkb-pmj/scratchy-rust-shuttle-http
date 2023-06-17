@@ -25,6 +25,7 @@
 	"error.not_found.user": "Użytkownik {user} nie istnieje.",
 	"already_linked_to_you": "Konto {user} jest już połączone z Twoim kontem Discord.",
 	"already_linked_to_other": "Konto {user} jest już połączone z {id}.",
+	"link_your_account": "Aby połączyć {user} z {id}, skopiuj kod i wyślij go w studiu.",
 	"generate_code": "Wygeneruj kod",
 	"go_to_studio": "Otwórz studio"
 }

@@ -122,7 +122,7 @@ pub async fn run(
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
             InteractionResponseDataBuilder::new()
-                .content(locale.already_linked_to_you(username))
+                .content(locale.link_your_account(&author.id.mention().to_string(), username))
                 .components([Component::ActionRow(ActionRow {
                     components: vec![
                         Component::Button(Button {
@@ -143,6 +143,7 @@ pub async fn run(
                         }),
                     ],
                 })])
+                .allowed_mentions(Default::default())
                 .build(),
         ),
     });

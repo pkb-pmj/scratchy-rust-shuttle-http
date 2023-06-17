@@ -25,6 +25,7 @@
 	"error.not_found.user": "User {user} doesn't exist.",
 	"already_linked_to_you": "The account {user} is already linked to your Discord account.",
 	"already_linked_to_other": "The account {user} is already linked to {id}.",
+	"link_your_account": "To link {user} to {id}, copy the code and post it in the studio.",
 	"generate_code": "Generate the code",
 	"go_to_studio": "Go to the studio"
 }
