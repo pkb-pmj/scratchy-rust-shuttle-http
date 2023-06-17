@@ -1,4 +1,5 @@
 mod commands;
+mod context;
 pub mod register;
 
 use axum::{
