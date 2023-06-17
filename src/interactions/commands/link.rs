@@ -55,6 +55,7 @@ pub async fn run(
     };
 
     let author_id = interaction.author_id().unwrap();
+    let account_url = format!("[{}]({})", username, site::User::url(username.to_string()));
 
     let (db, scratch_api) = tokio::join!(
         sqlx::query!(
@@ -74,8 +75,6 @@ pub async fn run(
     );
 
     if let Some(account) = db.unwrap() {
-        let account_url = site::User::url(username.to_string());
-
         let content = if account.id == author_id {
             locale.already_linked_to_you(&account_url)
         } else {
@@ -96,7 +95,7 @@ pub async fn run(
         let (title, description) = match error {
             ScratchAPIError::NotFound => (
                 locale.error_not_found(),
-                locale.error_not_found_user(&site::User::url(username.to_string())),
+                locale.error_not_found_user(&account_url),
             ),
             ScratchAPIError::ServerError => (
                 locale.error_scratch_api(),
@@ -123,7 +122,7 @@ pub async fn run(
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
             InteractionResponseDataBuilder::new()
-                .content(locale.link_your_account(&author_id.mention().to_string(), username))
+                .content(locale.link_your_account(&author_id.mention().to_string(), &account_url))
                 .components([Component::ActionRow(ActionRow {
                     components: vec![
                         Component::Button(Button {
