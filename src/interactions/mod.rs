@@ -81,7 +81,15 @@ async fn router(
         InteractionType::ApplicationCommand => match interaction.data {
             Some(InteractionData::ApplicationCommand(ref data)) => match data.name.as_str() {
                 "about" => commands::about::run().await,
-                "link" => commands::link::run(data, state, interaction.locale.into()).await,
+                "link" => {
+                    commands::link::run(
+                        data,
+                        state,
+                        interaction.locale.to_owned().into(),
+                        interaction.author().unwrap().to_owned(),
+                    )
+                    .await
+                }
                 "ping" => commands::ping::run().await,
                 "user" => commands::user::run(data, state, interaction.locale.into()).await,
                 _ => Err(InteractionError::NotImplemented),

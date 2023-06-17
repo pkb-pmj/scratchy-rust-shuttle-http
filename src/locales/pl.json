@@ -22,5 +22,7 @@
 	"error.internal": "Błąd wewnętrzny",
 	"error.internal.description": "Coś poszło nie tak wewnątrz bota. Postaramy się jak najszybciej to naprawić. Jeżeli wiesz jak doprowadzić do tego błędu lub masz jakieś inne przydatne informacje, zgłoś to na serwerze wsparcia.",
 	"error.not_found": "Nie znaleziono",
-	"error.not_found.user": "Użytkownik {user} nie istnieje."
+	"error.not_found.user": "Użytkownik {user} nie istnieje.",
+	"already_linked_to_you": "Konto {user} jest już połączone z Twoim kontem Discord.",
+	"already_linked_to_other": "Konto {user} jest już połączone z {id}."
 }

@@ -22,5 +22,7 @@
 	"error.internal": "Internal error",
 	"error.internal.description": "Something went wrong inside the bot. We'll fix it as soon as possible. If you know how to reproduce this bug or have some other relevant information, report it in the support server.",
 	"error.not_found": "Not Found",
-	"error.not_found.user": "User {user} doesn't exist."
+	"error.not_found.user": "User {user} doesn't exist.",
+	"already_linked_to_you": "The account {user} is already linked to your Discord account.",
+	"already_linked_to_other": "The account {user} is already linked to {id}."
 }

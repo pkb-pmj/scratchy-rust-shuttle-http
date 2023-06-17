@@ -6,6 +6,7 @@ use twilight_model::{
     },
     http::interaction::{InteractionResponse, InteractionResponseType},
     id::{marker::UserMarker, Id},
+    user::User,
 };
 use twilight_util::builder::{
     command::{CommandBuilder, StringBuilder},
@@ -39,6 +40,7 @@ pub async fn run(
     data: &Box<CommandData>,
     state: AppState,
     locale: Locale,
+    author: User,
 ) -> Result<InteractionResponse, InteractionError> {
     let username = match &data
         .options
@@ -70,7 +72,22 @@ pub async fn run(
     );
 
     if let Some(account) = db.unwrap() {
-        account.id.mention();
+        let account_url = site::User::url(username.to_string());
+
+        let content = if account.id == author.id {
+            locale.already_linked_to_you(&account_url)
+        } else {
+            locale.already_linked_to_other(&account.id.mention().to_string(), &account_url)
+        };
+
+        return Ok(InteractionResponse {
+            kind: InteractionResponseType::ChannelMessageWithSource,
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(content)
+                    .build(),
+            ),
+        });
     }
 
     let mut user_embed = EmbedBuilder::new().color(Color::Success.into());
