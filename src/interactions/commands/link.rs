@@ -4,22 +4,24 @@ use twilight_model::{
         command::{Command, CommandType},
         interaction::application_command::{CommandData, CommandOptionValue},
     },
+    channel::message::{
+        component::{Button, ButtonStyle},
+        Component,
+    },
     http::interaction::{InteractionResponse, InteractionResponseType},
     id::{marker::UserMarker, Id},
     user::User,
 };
 use twilight_util::builder::{
     command::{CommandBuilder, StringBuilder},
-    embed::EmbedBuilder,
     InteractionResponseDataBuilder,
 };
 
 use crate::{
     datastore::ScratchUser,
-    embeds::Color,
     interactions::InteractionError,
-    locales::{ExtendLocaleEmbed, Locale},
-    scratch::{api, db, site, ScratchAPIError, Url},
+    locales::Locale,
+    scratch::{api, site, ScratchAPIError, Url, STUDIO_URL},
     state::AppState,
 };
 
@@ -53,7 +55,7 @@ pub async fn run(
         _ => unreachable!("expected option 'username' to be of type String"),
     };
 
-    let (db, scratch_api, scratch_db) = tokio::join!(
+    let (db, scratch_api) = tokio::join!(
         sqlx::query!(
             r#"
                 SELECT username, id
@@ -68,7 +70,6 @@ pub async fn run(
         })
         .fetch_optional(&state.pool),
         state.client.get::<api::User>(username.to_string()),
-        state.client.get::<db::User>(username.to_string()),
     );
 
     if let Some(account) = db.unwrap() {
@@ -90,44 +91,57 @@ pub async fn run(
         });
     }
 
-    let mut user_embed = EmbedBuilder::new().color(Color::Success.into());
-
-    user_embed = match scratch_api {
-        Ok(user) => {
-            user_embed = user.extend_locale_embed(locale, user_embed);
-
-            match scratch_db {
-                Ok(user) => user.extend_locale_embed(locale, user_embed),
-                Err(_) => user_embed,
+    if let Err(error) = scratch_api {
+        let (title, description) = match error {
+            ScratchAPIError::NotFound => (
+                locale.error_not_found(),
+                locale.error_not_found_user(&site::User::url(username.to_string())),
+            ),
+            ScratchAPIError::ServerError => (
+                locale.error_scratch_api(),
+                locale.error_scratch_api_description(),
+            ),
+            ScratchAPIError::Other(_) => {
+                (locale.error_internal(), locale.error_internal_description())
             }
-        }
-        Err(error) => match error {
-            ScratchAPIError::NotFound => user_embed
-                .color(Color::Error.into())
-                .title(locale.error_not_found())
-                .description(locale.error_not_found_user(&site::User::url(username.to_string()))),
-            ScratchAPIError::ServerError => user_embed
-                .color(Color::Error.into())
-                .title(locale.error_scratch_api())
-                .description(locale.error_scratch_api_description()),
-            ScratchAPIError::Other(_) => user_embed
-                .color(Color::Error.into())
-                .title(locale.error_internal())
-                .description(locale.error_internal_description()),
-        },
-    };
+        };
 
-    let embed = user_embed
-        .validate()
-        .expect("failed to validate embed")
-        .build();
+        let content = format!("## {title}\n{description}");
 
-    let res = InteractionResponseDataBuilder::new()
-        .embeds([embed])
-        .build();
+        return Ok(InteractionResponse {
+            kind: InteractionResponseType::ChannelMessageWithSource,
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(content)
+                    .build(),
+            ),
+        });
+    }
 
-    Ok(InteractionResponse {
+    return Ok(InteractionResponse {
         kind: InteractionResponseType::ChannelMessageWithSource,
-        data: Some(res),
-    })
+        data: Some(
+            InteractionResponseDataBuilder::new()
+                .content(locale.already_linked_to_you(username))
+                .components([
+                    Component::Button(Button {
+                        custom_id: Some(format!("code {username}").into()),
+                        disabled: false,
+                        emoji: None,
+                        label: Some(locale.generate_code()),
+                        style: ButtonStyle::Primary,
+                        url: None,
+                    }),
+                    Component::Button(Button {
+                        custom_id: None,
+                        disabled: false,
+                        emoji: None,
+                        label: Some(locale.go_to_studio()),
+                        style: ButtonStyle::Link,
+                        url: Some(STUDIO_URL.into()),
+                    }),
+                ])
+                .build(),
+        ),
+    });
 }
