@@ -5,7 +5,7 @@ use twilight_model::{
         interaction::application_command::{CommandData, CommandOptionValue},
     },
     channel::message::{
-        component::{Button, ButtonStyle},
+        component::{ActionRow, Button, ButtonStyle},
         Component,
     },
     http::interaction::{InteractionResponse, InteractionResponseType},
@@ -123,24 +123,26 @@ pub async fn run(
         data: Some(
             InteractionResponseDataBuilder::new()
                 .content(locale.already_linked_to_you(username))
-                .components([
-                    Component::Button(Button {
-                        custom_id: Some(format!("code {username}").into()),
-                        disabled: false,
-                        emoji: None,
-                        label: Some(locale.generate_code()),
-                        style: ButtonStyle::Primary,
-                        url: None,
-                    }),
-                    Component::Button(Button {
-                        custom_id: None,
-                        disabled: false,
-                        emoji: None,
-                        label: Some(locale.go_to_studio()),
-                        style: ButtonStyle::Link,
-                        url: Some(STUDIO_URL.into()),
-                    }),
-                ])
+                .components([Component::ActionRow(ActionRow {
+                    components: vec![
+                        Component::Button(Button {
+                            custom_id: Some(format!("code {username}").into()),
+                            disabled: false,
+                            emoji: None,
+                            label: Some(locale.generate_code()),
+                            style: ButtonStyle::Primary,
+                            url: None,
+                        }),
+                        Component::Button(Button {
+                            custom_id: None,
+                            disabled: false,
+                            emoji: None,
+                            label: Some(locale.go_to_studio()),
+                            style: ButtonStyle::Link,
+                            url: Some(STUDIO_URL.into()),
+                        }),
+                    ],
+                })])
                 .build(),
         ),
     });
