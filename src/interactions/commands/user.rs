@@ -57,89 +57,41 @@ pub async fn run(
         state.client.get::<db::User>(username.to_string()),
     );
 
-    let mut embed = EmbedBuilder::new().color(Color::Success.into());
-
-    // embed = match result {
-    //     (Err(ScratchAPIError::NotFound), Err(ScratchAPIError::NotFound)) => embed
-    //         .title(locale.error_not_found())
-    //         .description(
-    //             locale.error_not_found_user(&format!("https://scratch.mit.edu/user/{username}")),
-    //         )
-    //         .footer(APIStatus::Both),
-    //     (Err(ScratchAPIError::Other(_)), Err(ScratchAPIError::Other(_))) => {
-    //         embed.footer(APIStatus::None)
-    //     }
-    //     (Ok(api), Err(ScratchAPIError::Other(_))) => api
-    //         .extend_locale_embed(locale, embed)
-    //         .footer(APIStatus::OnlyAPI),
-    //     (Err(ScratchAPIError::Other(_)), Ok(db)) => db
-    //         .extend_locale_embed(locale, embed)
-    //         .footer(APIStatus::OnlyDB),
-    //     (api, db) => {
-    //         if let Ok(user) = api {
-    //             embed = user.extend_locale_embed(locale, embed);
-    //         }
-    //         if let Ok(user) = db {
-    //             embed = user.extend_locale_embed(locale, embed);
-    //         }
-    //         embed
-    //     } // (Ok(api), Ok(db)) => db
-    //       //     .extend_locale_embed(locale, api.extend_locale_embed(locale, embed))
-    //       //     .footer(APIStatus::Both),
-    //       // (Ok(api), Err(db)) => api
-    //       //     .extend_locale_embed(locale, embed)
-    //       //     .footer(APIStatus::OnlyAPI),
-    //       // (Err(api), Ok(db)) => db
-    //       //     .extend_locale_embed(locale, embed)
-    //       //     .footer(APIStatus::OnlyDB),
-    //       // (Err(api), Err(db)) => {
-    //       //     embed = embed.color(Color::Error.into());
-    //       //     match (api, db) {
-    //       //         (ScratchAPIError::Other(_), ScratchAPIError::Other(_)) => {
-    //       //             embed.footer(APIStatus::None)
-    //       //         }
-    //       //         _ => embed
-    //       //             .title(locale.error_not_found())
-    //       //             .description(locale.error_not_found_user(&format!(
-    //       //                 "https://scratch.mit.edu/user/{username}"
-    //       //             )))
-    //       //             .footer(APIStatus::Both),
-    //       //     }
-    //       // }
-    // };
-    embed = match api {
+    let response = match api {
         Ok(user) => {
+            let mut embed = EmbedBuilder::new().color(Color::Success.into());
+
             embed = user.extend_locale_embed(locale, embed);
 
-            match db {
-                Ok(user) => user.extend_locale_embed(locale, embed),
-                Err(_) => embed,
+            if let Ok(user) = db {
+                embed = user.extend_locale_embed(locale, embed)
             }
+
+            let embed = embed.validate().expect("failed to validate embed").build();
+
+            InteractionResponseDataBuilder::new().embeds([embed])
         }
-        Err(error) => match error {
-            ScratchAPIError::NotFound => embed
-                .color(Color::Error.into())
-                .title(locale.error_not_found())
-                .description(locale.error_not_found_user(&site::User::url(username.to_string()))),
-            ScratchAPIError::ServerError => embed
-                .color(Color::Error.into())
-                .title(locale.error_scratch_api())
-                .description(locale.error_scratch_api_description()),
-            ScratchAPIError::Other(_) => embed
-                .color(Color::Error.into())
-                .title(locale.error_internal())
-                .description(locale.error_internal_description()),
-        },
+        Err(error) => {
+            let (title, description) = match error {
+                ScratchAPIError::NotFound => (
+                    locale.error_not_found(),
+                    locale.error_not_found_user(&site::User::url(username.to_string())),
+                ),
+                ScratchAPIError::ServerError => (
+                    locale.error_scratch_api(),
+                    locale.error_scratch_api_description(),
+                ),
+                ScratchAPIError::Other(_) => {
+                    (locale.error_internal(), locale.error_internal_description())
+                }
+            };
+
+            InteractionResponseDataBuilder::new().content(format!("{}\n{}", title, description))
+        }
     };
-
-    let embed = embed.validate().expect("failed to validate embed").build();
-
-    let res = InteractionResponseDataBuilder::new()
-        .embeds([embed])
-        .build();
 
     Ok(InteractionResponse {
         kind: InteractionResponseType::ChannelMessageWithSource,
-        data: Some(res),
+        data: Some(response.build()),
     })
 }
