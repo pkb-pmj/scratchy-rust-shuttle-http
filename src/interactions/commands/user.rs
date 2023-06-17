@@ -1,7 +1,7 @@
 use twilight_model::{
     application::{
         command::{Command, CommandType},
-        interaction::application_command::{CommandData, CommandOptionValue},
+        interaction::application_command::CommandOptionValue,
     },
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
@@ -13,7 +13,7 @@ use twilight_util::builder::{
 
 use crate::{
     embeds::Color,
-    interactions::InteractionError,
+    interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::{ExtendLocaleEmbed, Locale},
     scratch::{api, db, site, ScratchAPIError, Url},
     state::AppState,
@@ -37,11 +37,12 @@ pub fn register() -> Command {
 }
 
 pub async fn run(
-    data: &Box<CommandData>,
     state: AppState,
+    interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let username = match &data
+    let username = match &interaction
+        .data()
         .options
         .iter()
         .find(|option| option.name == "username")

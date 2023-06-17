@@ -2,7 +2,7 @@ use twilight_mention::Mention;
 use twilight_model::{
     application::{
         command::{Command, CommandType},
-        interaction::application_command::{CommandData, CommandOptionValue},
+        interaction::application_command::CommandOptionValue,
     },
     channel::message::{
         component::{ActionRow, Button, ButtonStyle},
@@ -10,7 +10,6 @@ use twilight_model::{
     },
     http::interaction::{InteractionResponse, InteractionResponseType},
     id::{marker::UserMarker, Id},
-    user::User,
 };
 use twilight_util::builder::{
     command::{CommandBuilder, StringBuilder},
@@ -19,7 +18,7 @@ use twilight_util::builder::{
 
 use crate::{
     datastore::ScratchUser,
-    interactions::InteractionError,
+    interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::Locale,
     scratch::{api, site, ScratchAPIError, Url, STUDIO_URL},
     state::AppState,
@@ -39,12 +38,12 @@ pub fn register() -> Command {
 }
 
 pub async fn run(
-    data: &Box<CommandData>,
     state: AppState,
+    interaction: ApplicationCommandInteraction,
     locale: Locale,
-    author: User,
 ) -> Result<InteractionResponse, InteractionError> {
-    let username = match &data
+    let username = match &interaction
+        .data()
         .options
         .iter()
         .find(|option| option.name == "username")
@@ -54,6 +53,8 @@ pub async fn run(
         CommandOptionValue::String(value) => value,
         _ => unreachable!("expected option 'username' to be of type String"),
     };
+
+    let author_id = interaction.author_id().unwrap();
 
     let (db, scratch_api) = tokio::join!(
         sqlx::query!(
@@ -75,10 +76,10 @@ pub async fn run(
     if let Some(account) = db.unwrap() {
         let account_url = site::User::url(username.to_string());
 
-        let content = if account.id == author.id {
+        let content = if account.id == author_id {
             locale.already_linked_to_you(&account_url)
         } else {
-            locale.already_linked_to_other(&account.id.mention().to_string(), &account_url)
+            locale.already_linked_to_other(&author_id.mention().to_string(), &account_url)
         };
 
         return Ok(InteractionResponse {
@@ -122,7 +123,7 @@ pub async fn run(
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
             InteractionResponseDataBuilder::new()
-                .content(locale.link_your_account(&author.id.mention().to_string(), username))
+                .content(locale.link_your_account(&author_id.mention().to_string(), username))
                 .components([Component::ActionRow(ActionRow {
                     components: vec![
                         Component::Button(Button {

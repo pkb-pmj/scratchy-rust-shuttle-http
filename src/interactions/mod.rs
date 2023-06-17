@@ -12,7 +12,7 @@ use axum::{
 use ed25519_dalek::Verifier;
 use hyper::body::to_bytes;
 use twilight_model::{
-    application::interaction::{Interaction, InteractionData, InteractionType},
+    application::interaction::{Interaction, InteractionType},
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
 
@@ -74,35 +74,16 @@ async fn router(
     interaction: Interaction,
     state: AppState,
 ) -> Result<InteractionResponse, InteractionError> {
+    let locale = interaction.locale.clone().into();
+
     match interaction.kind {
         InteractionType::Ping => Ok(InteractionResponse {
             kind: InteractionResponseType::Pong,
             data: None,
         }),
-        InteractionType::ApplicationCommand => match interaction.data {
-            Some(InteractionData::ApplicationCommand(ref data)) => match data.name.as_str() {
-                "about" => commands::about::run().await,
-                "link" => {
-                    commands::link::run(
-                        data,
-                        state,
-                        interaction.locale.to_owned().into(),
-                        interaction.author().unwrap().to_owned(),
-                    )
-                    .await
-                }
-                "ping" => commands::ping::run().await,
-                "user" => commands::user::run(data, state, interaction.locale.into()).await,
-                _ => Err(InteractionError::NotImplemented),
-            },
-            _ => unreachable!(),
-        },
-        InteractionType::MessageComponent => match interaction.data {
-            Some(InteractionData::MessageComponent(data)) => match data.custom_id.as_str() {
-                _ => Err(InteractionError::NotImplemented),
-            },
-            _ => unreachable!(),
-        },
+        InteractionType::ApplicationCommand => {
+            commands::router(state, interaction.into(), locale).await
+        }
         _ => Err(InteractionError::NotImplemented),
     }
 }
