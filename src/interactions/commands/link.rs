@@ -18,7 +18,11 @@ use twilight_util::builder::{
 
 use crate::{
     datastore::ScratchUser,
-    interactions::{components::code, context::ApplicationCommandInteraction, InteractionError},
+    interactions::{
+        components::code::{self, CustomId},
+        context::ApplicationCommandInteraction,
+        InteractionError,
+    },
     locales::Locale,
     scratch::{api, site, ScratchAPIError, Url, STUDIO_URL},
     state::AppState,
@@ -118,6 +122,14 @@ pub async fn run(
         });
     }
 
+    let code_button = code::build(
+        CustomId {
+            username: username.to_string(),
+            id: author_id,
+        },
+        locale,
+    );
+
     return Ok(InteractionResponse {
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
@@ -125,7 +137,7 @@ pub async fn run(
                 .content(locale.link_your_account(&author_id.mention().to_string(), &account_url))
                 .components([Component::ActionRow(ActionRow {
                     components: vec![
-                        code::build(username.to_string(), locale),
+                        code_button,
                         Component::Button(Button {
                             custom_id: None,
                             disabled: false,
