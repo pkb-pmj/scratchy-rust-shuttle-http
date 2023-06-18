@@ -27,5 +27,6 @@
 	"already_linked_to_other": "Konto {user} jest już połączone z {id}.",
 	"link_your_account": "Aby połączyć {user} z {id}, skopiuj kod i wyślij go w studiu.",
 	"generate_code": "Wygeneruj kod",
-	"go_to_studio": "Otwórz studio"
+	"go_to_studio": "Otwórz studio",
+	"verify_comment": "Zweryfikuj komentarz"
 }

@@ -1,4 +1,5 @@
 mod commands;
+mod components;
 mod context;
 pub mod register;
 
@@ -83,6 +84,9 @@ async fn router(
         }),
         InteractionType::ApplicationCommand => {
             commands::router(state, interaction.into(), locale).await
+        }
+        InteractionType::MessageComponent => {
+            components::router(state, interaction.into(), locale).await
         }
         _ => Err(InteractionError::NotImplemented),
     }

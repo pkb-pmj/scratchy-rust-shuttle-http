@@ -18,7 +18,7 @@ use twilight_util::builder::{
 
 use crate::{
     datastore::ScratchUser,
-    interactions::{context::ApplicationCommandInteraction, InteractionError},
+    interactions::{components::code, context::ApplicationCommandInteraction, InteractionError},
     locales::Locale,
     scratch::{api, site, ScratchAPIError, Url, STUDIO_URL},
     state::AppState,
@@ -125,14 +125,7 @@ pub async fn run(
                 .content(locale.link_your_account(&author_id.mention().to_string(), &account_url))
                 .components([Component::ActionRow(ActionRow {
                     components: vec![
-                        Component::Button(Button {
-                            custom_id: Some(format!("code {username}").into()),
-                            disabled: false,
-                            emoji: None,
-                            label: Some(locale.generate_code()),
-                            style: ButtonStyle::Primary,
-                            url: None,
-                        }),
+                        code::build(username.to_string(), locale),
                         Component::Button(Button {
                             custom_id: None,
                             disabled: false,
