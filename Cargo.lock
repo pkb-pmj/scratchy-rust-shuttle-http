@@ -1887,6 +1887,7 @@ dependencies = [
  "hex",
  "hyper",
  "i18n_codegen",
+ "rand 0.8.5",
  "reqwest",
  "serde",
  "serde_json",

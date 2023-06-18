@@ -27,3 +27,4 @@ time = { version = "0.3.20", features = ["serde", "parsing"] }
 i18n_codegen = { git = "https://github.com/pkb-pmj/i18n_codegen_simpler_api.git" }
 sqlx = { version = "0.6.3", features = ["postgres", "macros", "migrate", "bigdecimal", "offline"] }
 twilight-mention = "0.15.1"
+rand = "0.8.5"
