@@ -1,4 +1,4 @@
-mod datastore;
+mod database;
 mod embeds;
 mod interactions;
 mod locales;

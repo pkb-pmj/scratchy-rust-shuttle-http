@@ -17,7 +17,7 @@ use twilight_util::builder::{
 };
 
 use crate::{
-    datastore::ScratchUser,
+    database::ScratchUser,
     interactions::{
         components::code::{self, CustomId},
         context::ApplicationCommandInteraction,
