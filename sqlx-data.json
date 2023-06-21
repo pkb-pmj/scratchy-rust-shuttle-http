@@ -1,6 +1,85 @@
 {
   "db": "PostgreSQL",
-  "fa9c9dfd43885cdcee468470f12418831c43c1fc1c006809bd9575f44fa578a1": {
+  "43f8a7a5df3bb3c5d477af04b9e5628276126256c7dee9b3dcf21350aefb2a58": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO discord_accounts (id)\n                VALUES ($1)\n                ON CONFLICT DO NOTHING;\n        "
+  },
+  "8262ea47cf2fc43a58a27609fd04389e4121e7e700b5ad17d8473159e68a71ed": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                INSERT INTO scratch_accounts (username, id)\n                VALUES ($1, $2)\n                RETURNING *\n            "
+  },
+  "9fc83a7e0e931c3811a5ad44c23c852824182b670729747735758c3009f849ab": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                SELECT *\n                FROM discord_accounts\n                WHERE id = $1\n            "
+  },
+  "a436e6dc058c4e5e9d6c8911cda225ba90e26a848aff9ff92747f562c5c797b5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                INSERT INTO discord_accounts (id)\n                VALUES ($1)\n                RETURNING *\n            "
+  },
+  "b3ee0e52d742e28e640ace1ff2a82657b9a61d88979f80ef0d31ebea7b1ba9e2": {
     "describe": {
       "columns": [
         {
@@ -24,6 +103,59 @@
         ]
       }
     },
-    "query": "\n                SELECT username, id\n                FROM scratch_accounts\n                WHERE lower(username) = lower($1)\n            "
+    "query": "\n                SELECT *\n                FROM scratch_accounts\n                WHERE id = $1\n            "
+  },
+  "c58e40eae8a0ca5099c229c75a7f53eda0dbf4dcf14581192798485ca89636f9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                SELECT *\n                FROM scratch_accounts\n                WHERE lower(username) = lower($1)\n            "
+  },
+  "e37d71ceb0ef26582f88bc9724256f48447cd2535e61ace4ba29f19bf4f2f7ac": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO scratch_accounts (username, id)\n                VALUES ($1, $2)\n                ON CONFLICT (lower(username)) DO NOTHING\n                RETURNING username, id;\n        "
   }
 }
