@@ -4,7 +4,7 @@ use time::{Duration, OffsetDateTime};
 use twilight_model::{
     channel::message::{
         component::{ActionRow, Button, ButtonStyle},
-        Component,
+        Component, MessageFlags,
     },
     http::interaction::{InteractionResponse, InteractionResponseType},
     id::{marker::UserMarker, Id},
@@ -40,6 +40,10 @@ pub async fn run(
     custom_id: CustomId,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
+    if interaction.author_id().unwrap() != custom_id.id {
+        return Err(InteractionError::NotImplemented);
+    }
+
     let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 20);
     let expires = OffsetDateTime::now_utc().saturating_add(Duration::minutes(5));
 
@@ -60,6 +64,7 @@ pub async fn run(
                 .components([Component::ActionRow(ActionRow {
                     components: vec![done_button],
                 })])
+                .flags(MessageFlags::EPHEMERAL)
                 .build(),
         ),
     })
