@@ -73,7 +73,7 @@ mod tests {
     fn serde_done() {
         let original = ComponentCustomId::Done(done::CustomId {
             code: "code".into(),
-            expires: datetime!(2023-06-18 15:35:34 UTC),
+            generated: datetime!(2023-06-18 15:35:34 UTC),
             username: "username".into(),
         });
 

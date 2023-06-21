@@ -1,6 +1,6 @@
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use time::{Duration, OffsetDateTime};
+use time::OffsetDateTime;
 use twilight_model::{
     channel::message::{
         component::{ActionRow, Button, ButtonStyle},
@@ -45,13 +45,13 @@ pub async fn run(
     }
 
     let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 20);
-    let expires = OffsetDateTime::now_utc().saturating_add(Duration::minutes(5));
+    let generated = OffsetDateTime::now_utc();
 
     let done_button = done::build(
         done::CustomId {
             username: custom_id.username,
             code: code.to_owned(),
-            expires,
+            generated,
         },
         locale,
     );
