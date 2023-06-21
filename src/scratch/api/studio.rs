@@ -7,7 +7,7 @@ impl Url for Vec<Comment> {
     type UrlArgs = i64;
 
     fn url(studio_id: Self::UrlArgs) -> String {
-        format!("https://api.scratch.mit.edu/users/{studio_id}")
+        format!("https://api.scratch.mit.edu/studios/{studio_id}/comments")
     }
 }
 
