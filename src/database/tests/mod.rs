@@ -80,3 +80,101 @@ async fn get_account(pool: PgPool) {
         "linked Scratch accounts",
     );
 }
+
+#[sqlx::test(fixtures("linked_accounts"))]
+async fn create_discord_account(pool: PgPool) {
+    pool.create_discord_account("755497867606622450".parse().unwrap())
+        .await
+        .expect_err("can't create account with already used ID");
+
+    let created_account = pool
+        .create_discord_account("855497867606622450".parse().unwrap())
+        .await
+        .unwrap();
+
+    assert_eq!(
+        created_account,
+        DiscordAccount {
+            id: "855497867606622450".parse().unwrap()
+        },
+        "create Discord account",
+    );
+
+    let read_account = pool
+        .get_discord_account("855497867606622450".parse().unwrap())
+        .await
+        .unwrap();
+
+    assert_eq!(
+        read_account,
+        Some(created_account),
+        "successfully created Discord account",
+    );
+}
+
+#[sqlx::test(fixtures("linked_accounts"))]
+async fn create_linked_scratch_account(pool: PgPool) {
+    pool.create_linked_scratch_account(
+        "PMJ_Studio".to_string(),
+        "755497867606622450".parse().unwrap(),
+    )
+    .await
+    .expect_err("can't link already linked account to the same user");
+
+    pool.create_linked_scratch_account(
+        "PMJ_MJBCS27".to_string(),
+        "755497867606622450".parse().unwrap(),
+    )
+    .await
+    .expect_err("can't link already linked account to other user");
+
+    pool.create_linked_scratch_account(
+        "PMJ_JPB14".to_string(),
+        "855497867606622450".parse().unwrap(),
+    )
+    .await
+    .expect_err("can't link to a nonexistent user");
+
+    let linked_account = pool
+        .create_linked_scratch_account(
+            "PMJ_JPB14".to_string(),
+            "755497867606622450".parse().unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        linked_account,
+        ScratchAccount {
+            username: "PMJ_JPB14".to_string(),
+            id: "755497867606622450".parse().unwrap(),
+        },
+        "successfully linked Scratch account",
+    );
+
+    let mut linked_accounts = pool
+        .get_linked_scratch_accounts("755497867606622450".parse().unwrap())
+        .await
+        .unwrap();
+
+    linked_accounts.sort_by_key(|account| account.username.to_string());
+
+    assert_eq!(
+        linked_accounts,
+        vec![
+            ScratchAccount {
+                username: "PMJ_JPB14".to_string(),
+                id: "755497867606622450".parse().unwrap(),
+            },
+            ScratchAccount {
+                username: "PMJ_Studio".to_string(),
+                id: "755497867606622450".parse().unwrap(),
+            },
+            ScratchAccount {
+                username: "PMJ_test".to_string(),
+                id: "755497867606622450".parse().unwrap(),
+            },
+        ],
+        "linked Scratch accounts",
+    );
+}
