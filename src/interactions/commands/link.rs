@@ -9,7 +9,6 @@ use twilight_model::{
         Component,
     },
     http::interaction::{InteractionResponse, InteractionResponseType},
-    id::{marker::UserMarker, Id},
 };
 use twilight_util::builder::{
     command::{CommandBuilder, StringBuilder},
@@ -17,7 +16,7 @@ use twilight_util::builder::{
 };
 
 use crate::{
-    database::ScratchUser,
+    database::Database,
     interactions::{
         components::code::{self, CustomId},
         context::ApplicationCommandInteraction,
@@ -62,19 +61,7 @@ pub async fn run(
     let account_url = format!("[{}]({})", username, site::User::url(username.to_string()));
 
     let (db, scratch_api) = tokio::join!(
-        sqlx::query!(
-            r#"
-                SELECT username, id
-                FROM scratch_accounts
-                WHERE lower(username) = lower($1)
-            "#,
-            username
-        )
-        .map(|row| ScratchUser {
-            username: row.username,
-            id: Id::<UserMarker>::new(row.id.parse().unwrap())
-        })
-        .fetch_optional(&state.pool),
+        state.pool.get_scratch_account(username.to_string()),
         state.client.get::<api::User>(username.to_string()),
     );
 
