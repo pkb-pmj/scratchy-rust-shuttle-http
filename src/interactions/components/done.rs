@@ -86,10 +86,11 @@ pub async fn run(
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
             InteractionResponseDataBuilder::new()
-                .content(
-                    locale
-                        .successfully_linked(&author_id.mention().to_string(), &custom_id.username),
-                )
+                .content(locale.successfully_linked(
+                    &author_id.mention().to_string(),
+                    &user_link(&custom_id.username),
+                ))
+                .allowed_mentions(Default::default())
                 .build(),
         ),
     })
