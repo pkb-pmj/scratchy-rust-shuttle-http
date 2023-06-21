@@ -19,3 +19,7 @@ impl Url for Project {
         format!("https://scratch.mit.edu/projects/{id}")
     }
 }
+
+pub fn user_link(username: &str) -> String {
+    format!("[{username}](https://scratch.mit.edu/users/{username})")
+}

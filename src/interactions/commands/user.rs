@@ -15,7 +15,7 @@ use crate::{
     embeds::Color,
     interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::{ExtendLocaleEmbed, Locale},
-    scratch::{api, db, site, ScratchAPIError, Url},
+    scratch::{api, db, site::user_link, ScratchAPIError},
     state::AppState,
 };
 
@@ -76,7 +76,7 @@ pub async fn run(
             let (title, description) = match error {
                 ScratchAPIError::NotFound => (
                     locale.error_not_found(),
-                    locale.error_not_found_user(&site::User::url(username.to_string())),
+                    locale.error_not_found_user(&user_link(username)),
                 ),
                 ScratchAPIError::ServerError => (
                     locale.error_scratch_api(),

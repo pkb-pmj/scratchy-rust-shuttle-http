@@ -23,7 +23,7 @@ use crate::{
         InteractionError,
     },
     locales::Locale,
-    scratch::{api, site, ScratchAPIError, Url, STUDIO_URL},
+    scratch::{api, site::user_link, ScratchAPIError, STUDIO_URL},
     state::AppState,
 };
 
@@ -58,7 +58,8 @@ pub async fn run(
     };
 
     let author_id = interaction.author_id().unwrap();
-    let account_url = format!("[{}]({})", username, site::User::url(username.to_string()));
+    // TODO: use username from API
+    let account_url = user_link(username);
 
     let (db, scratch_api) = tokio::join!(
         state.pool.get_scratch_account(username.to_string()),
