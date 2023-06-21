@@ -5,12 +5,6 @@ use async_trait::async_trait;
 use sqlx::{Executor, Postgres};
 use twilight_model::id::{marker::UserMarker, Id};
 
-#[derive(Debug, Clone)]
-pub struct ScratchUser {
-    pub username: String,
-    pub id: Id<UserMarker>,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiscordAccount {
     pub id: Id<UserMarker>,
