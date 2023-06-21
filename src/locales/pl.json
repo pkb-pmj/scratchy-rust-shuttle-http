@@ -28,5 +28,10 @@
 	"link_your_account": "Aby połączyć {user} z {id}, skopiuj kod i wyślij go w studiu.",
 	"generate_code": "Wygeneruj kod",
 	"go_to_studio": "Otwórz studio",
-	"verify_comment": "Zweryfikuj komentarz"
+	"verify_comment": "Zweryfikuj komentarz",
+	"code_expired": "Skończył się czas ważności kodu, spróbuj ponownie.",
+	"comment_not_found": "Nie znaleziono komentarza.",
+	"invalid_code": "Nieprawidłowy kod.",
+	"invalid_username": "Niewłaściwe konto: {actual}, powinno być {expected}.",
+	"successfully_linked": "Połączono {user} z {id}!"
 }

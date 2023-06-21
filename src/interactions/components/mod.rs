@@ -25,7 +25,9 @@ pub async fn router(
 
     match custom_id {
         ComponentCustomId::Code(custom_id) => code::run(interaction, custom_id, locale).await,
-        _ => unimplemented!(),
+        ComponentCustomId::Done(custom_id) => {
+            done::run(state, interaction, custom_id, locale).await
+        }
     }
 }
 

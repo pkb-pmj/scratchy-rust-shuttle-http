@@ -28,5 +28,10 @@
 	"link_your_account": "To link {user} to {id}, copy the code and post it in the studio.",
 	"generate_code": "Generate the code",
 	"go_to_studio": "Go to the studio",
-	"verify_comment": "Verify the comment"
+	"verify_comment": "Verify the comment",
+	"code_expired": "Your code has expired, try again.",
+	"comment_not_found": "Comment not found.",
+	"invalid_code": "Invalid code.",
+	"invalid_username": "Invalid username: {actual}, should be {expected}.",
+	"successfully_linked": "Successfully linked {user} to {id}!"
 }
