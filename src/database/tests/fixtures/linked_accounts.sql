@@ -1,0 +1,12 @@
+INSERT INTO
+	discord_accounts (id)
+VALUES
+	('755497867606622450'),
+	('775316334259077120');
+
+INSERT INTO
+	scratch_accounts (username, id)
+VALUES
+	('PMJ_Studio', '755497867606622450'),
+	('PMJ_test', '755497867606622450'),
+	('PMJ_MJBCS27', '775316334259077120');

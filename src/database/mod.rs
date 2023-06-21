@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use async_trait::async_trait;
 use sqlx::{Executor, Postgres};
 use twilight_model::id::{marker::UserMarker, Id};
@@ -8,12 +11,12 @@ pub struct ScratchUser {
     pub id: Id<UserMarker>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiscordAccount {
     pub id: Id<UserMarker>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScratchAccount {
     pub username: String,
     pub id: Id<UserMarker>,
@@ -157,28 +160,5 @@ where
         })
         .fetch_one(self)
         .await
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use sqlx::PgPool;
-
-    use super::*;
-
-    /// Just to make sure it compiles with all the lifetimes
-    #[sqlx::test]
-    async fn lifetime_compile_test(pool: PgPool) {
-        pool.get_scratch_account("username".into()).await.unwrap();
-
-        let mut tx = pool.begin().await.unwrap();
-
-        tx.get_scratch_account("username".into()).await.unwrap();
-
-        pool.get_scratch_account("username".into()).await.unwrap();
-
-        tx.get_scratch_account("username".into()).await.unwrap();
-
-        tx.commit().await.unwrap();
     }
 }
