@@ -2,7 +2,7 @@
 mod tests;
 
 use async_trait::async_trait;
-use sqlx::{Executor, Postgres};
+use sqlx::{Executor, PgPool, Postgres};
 use twilight_model::id::{marker::UserMarker, Id};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -155,4 +155,37 @@ where
         .fetch_one(self)
         .await
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinkResult {
+    AlreadyLinkedToYou,
+    AlreadyLinkedToOther(Id<UserMarker>),
+    SuccessfullyLinked,
+}
+
+pub async fn link_account(
+    pool: &PgPool,
+    username: String,
+    id: Id<UserMarker>,
+) -> Result<LinkResult, sqlx::Error> {
+    let mut tx = pool.begin().await?;
+
+    if let Some(already_linked) = tx.get_scratch_account(username.to_owned()).await? {
+        if already_linked.id == id {
+            return Ok(LinkResult::AlreadyLinkedToYou);
+        } else {
+            return Ok(LinkResult::AlreadyLinkedToOther(already_linked.id));
+        }
+    }
+
+    if tx.get_discord_account(id).await?.is_none() {
+        tx.create_discord_account(id).await?;
+    }
+
+    tx.create_linked_scratch_account(username, id).await?;
+
+    tx.commit().await?;
+
+    Ok(LinkResult::SuccessfullyLinked)
 }

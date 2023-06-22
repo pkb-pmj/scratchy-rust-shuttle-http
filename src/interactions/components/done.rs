@@ -11,6 +11,7 @@ use twilight_model::{
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{
+    database::{link_account, LinkResult},
     interactions::{context::MessageComponentInteraction, InteractionError},
     locales::Locale,
     scratch::{api::studio::Comment, site::user_link, STUDIO_ID},
@@ -80,16 +81,26 @@ pub async fn run(
         });
     }
 
-    // TODO: actually save to database
+    let message = match link_account(&state.pool, custom_id.username.to_owned(), author_id)
+        .await
+        .unwrap()
+    {
+        LinkResult::AlreadyLinkedToYou => {
+            locale.already_linked_to_you(&user_link(&custom_id.username))
+        }
+        LinkResult::AlreadyLinkedToOther(id) => locale
+            .already_linked_to_other(&id.mention().to_string(), &user_link(&custom_id.username)),
+        LinkResult::SuccessfullyLinked => locale.successfully_linked(
+            &author_id.mention().to_string(),
+            &user_link(&custom_id.username),
+        ),
+    };
 
     Ok(InteractionResponse {
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
             InteractionResponseDataBuilder::new()
-                .content(locale.successfully_linked(
-                    &author_id.mention().to_string(),
-                    &user_link(&custom_id.username),
-                ))
+                .content(message)
                 .allowed_mentions(Default::default())
                 .build(),
         ),

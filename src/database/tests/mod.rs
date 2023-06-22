@@ -178,3 +178,39 @@ async fn create_linked_scratch_account(pool: PgPool) {
         "linked Scratch accounts",
     );
 }
+
+#[sqlx::test(fixtures("linked_accounts"))]
+async fn test_link_account(pool: PgPool) {
+    let result = link_account(
+        &pool,
+        "PMJ_Studio".to_string(),
+        "755497867606622450".parse().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(result, LinkResult::AlreadyLinkedToYou);
+
+    let result = link_account(
+        &pool,
+        "PMJ_MJBCS27".to_string(),
+        "755497867606622450".parse().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(
+        result,
+        LinkResult::AlreadyLinkedToOther("775316334259077120".parse().unwrap())
+    );
+
+    let result = link_account(
+        &pool,
+        "PMJ_JPB14".to_string(),
+        "755497867606622450".parse().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(result, LinkResult::SuccessfullyLinked);
+}
