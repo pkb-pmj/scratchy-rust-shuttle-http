@@ -5,6 +5,7 @@ use crate::{locales::Locale, state::AppState};
 use super::{context::ApplicationCommandInteraction, InteractionError};
 
 pub mod about;
+pub mod find;
 pub mod link;
 pub mod ping;
 pub mod user;
@@ -16,6 +17,7 @@ pub async fn router(
 ) -> Result<InteractionResponse, InteractionError> {
     match interaction.data().name.as_str() {
         "about" => about::run().await,
+        "find" => find::run(state, interaction, locale).await,
         "link" => link::run(state, interaction, locale).await,
         "ping" => ping::run().await,
         "user" => user::run(state, interaction, locale).await,

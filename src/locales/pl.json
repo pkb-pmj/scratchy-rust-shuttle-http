@@ -34,5 +34,8 @@
 	"comment_not_found": "Nie znaleziono komentarza.",
 	"invalid_code": "Nieprawidłowy kod.",
 	"wrong_account": "Niewłaściwe konto: {actual}, powinno być {expected}.",
-	"successfully_linked": "Połączono {user} z {id}!"
+	"successfully_linked": "Połączono {user} z {id}!",
+	"no_linked_discord_account": "{user} nie ma połączonego konta Discord.",
+	"no_linked_scratch_accounts": "{id} nie ma połączonych kont Scratch.",
+	"linked_accounts": "{user} - połączone konta:"
 }

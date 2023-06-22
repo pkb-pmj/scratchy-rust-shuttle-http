@@ -34,5 +34,8 @@
 	"comment_not_found": "Comment not found.",
 	"invalid_code": "Invalid code.",
 	"wrong_account": "Wrong account: {actual}, should be {expected}.",
-	"successfully_linked": "Successfully linked {user} to {id}!"
+	"successfully_linked": "Successfully linked {user} to {id}!",
+	"no_linked_discord_account": "{user} doesn't have a linked Discord account.",
+	"no_linked_scratch_accounts": "{id} doesn't have any linked Scratch accounts.",
+	"linked_accounts": "{user} - linked accounts:"
 }
