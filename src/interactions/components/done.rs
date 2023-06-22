@@ -64,7 +64,7 @@ pub async fn run(
     let err = match validate_comment(comments, custom_id.to_owned()) {
         ValidateCommentResult::CommentNotFound => Some(locale.comment_not_found()),
         ValidateCommentResult::InvalidAccount(actual) => {
-            Some(locale.invalid_username(&user_link(&actual), &user_link(&custom_id.username)))
+            Some(locale.wrong_account(&user_link(&actual), &user_link(&custom_id.username)))
         }
         ValidateCommentResult::InvalidCode(_) => Some(locale.invalid_code()),
         ValidateCommentResult::Ok => None,

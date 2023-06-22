@@ -23,6 +23,7 @@
 	"error.internal.description": "Coś poszło nie tak wewnątrz bota. Postaramy się jak najszybciej to naprawić. Jeżeli wiesz jak doprowadzić do tego błędu lub masz jakieś inne przydatne informacje, zgłoś to na serwerze wsparcia.",
 	"error.not_found": "Nie znaleziono",
 	"error.not_found.user": "Użytkownik {user} nie istnieje.",
+	"invalid_username": "Nieprawidłowa nazwa użytkownika.",
 	"already_linked_to_you": "Konto {user} jest już połączone z Twoim kontem Discord.",
 	"already_linked_to_other": "Konto {user} jest już połączone z {id}.",
 	"link_your_account": "Aby połączyć {user} z {id}, skopiuj kod i wyślij go w studiu.",
@@ -32,6 +33,6 @@
 	"code_expired": "Skończył się czas ważności kodu, spróbuj ponownie.",
 	"comment_not_found": "Nie znaleziono komentarza.",
 	"invalid_code": "Nieprawidłowy kod.",
-	"invalid_username": "Niewłaściwe konto: {actual}, powinno być {expected}.",
+	"wrong_account": "Niewłaściwe konto: {actual}, powinno być {expected}.",
 	"successfully_linked": "Połączono {user} z {id}!"
 }

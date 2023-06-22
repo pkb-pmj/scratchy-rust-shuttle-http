@@ -23,6 +23,7 @@
 	"error.internal.description": "Something went wrong inside the bot. We'll fix it as soon as possible. If you know how to reproduce this bug or have some other relevant information, report it in the support server.",
 	"error.not_found": "Not Found",
 	"error.not_found.user": "User {user} doesn't exist.",
+	"invalid_username": "Invalid username.",
 	"already_linked_to_you": "The account {user} is already linked to your Discord account.",
 	"already_linked_to_other": "The account {user} is already linked to {id}.",
 	"link_your_account": "To link {user} to {id}, copy the code and post it in the studio.",
@@ -32,6 +33,6 @@
 	"code_expired": "Your code has expired, try again.",
 	"comment_not_found": "Comment not found.",
 	"invalid_code": "Invalid code.",
-	"invalid_username": "Invalid username: {actual}, should be {expected}.",
+	"wrong_account": "Wrong account: {actual}, should be {expected}.",
 	"successfully_linked": "Successfully linked {user} to {id}!"
 }

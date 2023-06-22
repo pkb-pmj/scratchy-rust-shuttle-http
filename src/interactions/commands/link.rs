@@ -23,7 +23,11 @@ use crate::{
         InteractionError,
     },
     locales::Locale,
-    scratch::{api, site::user_link, ScratchAPIError, STUDIO_URL},
+    scratch::{
+        api,
+        site::{user_link, username_is_valid},
+        ScratchAPIError, STUDIO_URL,
+    },
     state::AppState,
 };
 
@@ -56,6 +60,17 @@ pub async fn run(
         CommandOptionValue::String(value) => value,
         _ => unreachable!("expected option 'username' to be of type String"),
     };
+
+    if !username_is_valid(username) {
+        return Ok(InteractionResponse {
+            kind: InteractionResponseType::ChannelMessageWithSource,
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(locale.invalid_username())
+                    .build(),
+            ),
+        });
+    }
 
     let author_id = interaction.author_id().unwrap();
     // TODO: use username from API
