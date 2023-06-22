@@ -1,6 +1,7 @@
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
+use twilight_mention::Mention;
 use twilight_model::{
     channel::message::{
         component::{ActionRow, Button, ButtonStyle},
@@ -12,8 +13,11 @@ use twilight_model::{
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{
+    database::Database,
     interactions::{components::done, context::MessageComponentInteraction, InteractionError},
     locales::Locale,
+    scratch::site::user_link,
+    state::AppState,
 };
 
 use super::ComponentCustomId;
@@ -36,12 +40,42 @@ pub fn build(custom_id: CustomId, locale: Locale) -> Component {
 }
 
 pub async fn run(
+    state: AppState,
     interaction: MessageComponentInteraction,
     custom_id: CustomId,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    if interaction.author_id().unwrap() != custom_id.id {
+    let author_id = interaction.author_id().unwrap();
+
+    if author_id != custom_id.id {
         return Err(InteractionError::NotImplemented);
+    }
+
+    let already_linked = state
+        .pool
+        .get_scratch_account(custom_id.username.to_string())
+        .await
+        .unwrap();
+
+    if let Some(account) = already_linked {
+        let content = if account.id == author_id {
+            locale.already_linked_to_you(&user_link(&custom_id.username))
+        } else {
+            locale.already_linked_to_other(
+                &author_id.mention().to_string(),
+                &user_link(&custom_id.username),
+            )
+        };
+
+        return Ok(InteractionResponse {
+            kind: InteractionResponseType::ChannelMessageWithSource,
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(content)
+                    .allowed_mentions(Default::default())
+                    .build(),
+            ),
+        });
     }
 
     let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 20);

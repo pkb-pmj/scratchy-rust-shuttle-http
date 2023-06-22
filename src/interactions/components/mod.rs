@@ -24,7 +24,9 @@ pub async fn router(
         .expect("failed to parse custom_id from MessagePack");
 
     match custom_id {
-        ComponentCustomId::Code(custom_id) => code::run(interaction, custom_id, locale).await,
+        ComponentCustomId::Code(custom_id) => {
+            code::run(state, interaction, custom_id, locale).await
+        }
         ComponentCustomId::Done(custom_id) => {
             done::run(state, interaction, custom_id, locale).await
         }
