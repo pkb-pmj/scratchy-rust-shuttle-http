@@ -49,7 +49,7 @@ pub async fn run(
     interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let username = match &interaction
+    let mut username = match &interaction
         .data()
         .options
         .iter()
@@ -73,8 +73,6 @@ pub async fn run(
     }
 
     let author_id = interaction.author_id().unwrap();
-    // TODO: use username from API
-    let account_url = user_link(username);
 
     let (db, scratch_api) = tokio::join!(
         state.pool.get_scratch_account(username.to_string()),
@@ -82,10 +80,12 @@ pub async fn run(
     );
 
     if let Some(account) = db.unwrap() {
+        username = &account.username;
+
         let content = if account.id == author_id {
-            locale.already_linked_to_you(&account_url)
+            locale.already_linked_to_you(&user_link(username))
         } else {
-            locale.already_linked_to_other(&author_id.mention().to_string(), &account_url)
+            locale.already_linked_to_other(&author_id.mention().to_string(), &user_link(username))
         };
 
         return Ok(InteractionResponse {
@@ -98,31 +98,34 @@ pub async fn run(
         });
     }
 
-    if let Err(error) = scratch_api {
-        let (title, description) = match error {
-            ScratchAPIError::NotFound => (
-                locale.error_not_found(),
-                locale.error_not_found_user(&account_url),
-            ),
-            ScratchAPIError::ServerError => (
-                locale.error_scratch_api(),
-                locale.error_scratch_api_description(),
-            ),
-            ScratchAPIError::Other(_) => {
-                (locale.error_internal(), locale.error_internal_description())
-            }
-        };
+    match scratch_api {
+        Ok(ref user) => username = &user.username,
+        Err(error) => {
+            let (title, description) = match error {
+                ScratchAPIError::NotFound => (
+                    locale.error_not_found(),
+                    locale.error_not_found_user(&user_link(username)),
+                ),
+                ScratchAPIError::ServerError => (
+                    locale.error_scratch_api(),
+                    locale.error_scratch_api_description(),
+                ),
+                ScratchAPIError::Other(_) => {
+                    (locale.error_internal(), locale.error_internal_description())
+                }
+            };
 
-        let content = format!("## {title}\n{description}");
+            let content = format!("## {title}\n{description}");
 
-        return Ok(InteractionResponse {
-            kind: InteractionResponseType::ChannelMessageWithSource,
-            data: Some(
-                InteractionResponseDataBuilder::new()
-                    .content(content)
-                    .build(),
-            ),
-        });
+            return Ok(InteractionResponse {
+                kind: InteractionResponseType::ChannelMessageWithSource,
+                data: Some(
+                    InteractionResponseDataBuilder::new()
+                        .content(content)
+                        .build(),
+                ),
+            });
+        }
     }
 
     let code_button = code::build(
@@ -137,7 +140,10 @@ pub async fn run(
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(
             InteractionResponseDataBuilder::new()
-                .content(locale.link_your_account(&author_id.mention().to_string(), &account_url))
+                .content(
+                    locale
+                        .link_your_account(&author_id.mention().to_string(), &user_link(username)),
+                )
                 .components([Component::ActionRow(ActionRow {
                     components: vec![
                         code_button,
