@@ -85,7 +85,7 @@ pub async fn run(
         let content = if account.id == author_id {
             locale.already_linked_to_you(&user_link(username))
         } else {
-            locale.already_linked_to_other(&author_id.mention().to_string(), &user_link(username))
+            locale.already_linked_to_other(&account.id.mention().to_string(), &user_link(username))
         };
 
         return Ok(InteractionResponse {
@@ -93,6 +93,7 @@ pub async fn run(
             data: Some(
                 InteractionResponseDataBuilder::new()
                     .content(content)
+                    .allowed_mentions(Default::default())
                     .build(),
             ),
         });
