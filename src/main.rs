@@ -1,6 +1,7 @@
 mod database;
 mod embeds;
 mod interactions;
+mod linked_roles;
 mod locales;
 mod scratch;
 mod state;
