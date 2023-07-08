@@ -1,14 +1,16 @@
 use axum::extract::FromRef;
 use ed25519_dalek::PublicKey;
+use oauth2::basic::BasicClient;
 use reqwest::Url;
 use shuttle_secrets::SecretStore;
 use sqlx::PgPool;
 
-use crate::scratch::ScratchClient;
+use crate::{linked_roles::create_oauth_client, scratch::ScratchClient};
 
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub config: Config,
+    pub oauth_client: BasicClient,
     pub scratch_client: ScratchClient,
     pub pool: PgPool,
 }
@@ -17,10 +19,13 @@ impl AppState {
     pub fn new(secrets: SecretStore, pool: PgPool) -> Self {
         let config = Config::new(secrets);
 
+        let oauth_client = create_oauth_client(&config);
+
         let scratch_client = ScratchClient::new();
 
         Self {
             config,
+            oauth_client,
             scratch_client,
             pool,
         }
@@ -76,6 +81,12 @@ impl Config {
 impl FromRef<AppState> for Config {
     fn from_ref(input: &AppState) -> Self {
         input.config.clone()
+    }
+}
+
+impl FromRef<AppState> for BasicClient {
+    fn from_ref(input: &AppState) -> Self {
+        input.oauth_client.clone()
     }
 }
 
