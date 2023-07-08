@@ -1967,6 +1967,7 @@ dependencies = [
  "thiserror",
  "time",
  "tokio",
+ "tracing",
  "twilight-http",
  "twilight-mention",
  "twilight-model",
