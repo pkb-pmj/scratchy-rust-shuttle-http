@@ -15,6 +15,7 @@ use shuttle_secrets::SecretStore;
 use interactions::{interaction_handler, register::register_commands};
 use sqlx::PgPool;
 use state::AppState;
+use tracing_panic::panic_hook;
 
 async fn hello_world() -> &'static str {
     "Hello, world!"
@@ -25,6 +26,8 @@ async fn axum(
     #[shuttle_secrets::Secrets] secrets: SecretStore,
     #[shuttle_aws_rds::Postgres(local_uri = "{secrets.database_url}")] pool: PgPool,
 ) -> shuttle_axum::ShuttleAxum {
+    std::panic::set_hook(Box::new(panic_hook));
+
     let state = AppState::new(secrets, pool);
 
     sqlx::migrate!("./migrations")
