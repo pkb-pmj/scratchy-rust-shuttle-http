@@ -32,7 +32,7 @@ async fn axum(
         .await
         .expect("database migration failed");
 
-    register_commands(state.discord_token.to_string())
+    register_commands(state.config.token.to_string())
         .await
         .expect("failed to register commands");
 

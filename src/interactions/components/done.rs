@@ -59,7 +59,7 @@ pub async fn run(
         });
     }
 
-    let comments = state.client.get::<Vec<Comment>>(STUDIO_ID).await.unwrap();
+    let comments = state.scratch_client.get::<Vec<Comment>>(STUDIO_ID).await.unwrap();
 
     let err = match validate_comment(comments, custom_id.to_owned()) {
         ValidateCommentResult::CommentNotFound => Some(locale.comment_not_found()),

@@ -54,8 +54,8 @@ pub async fn run(
     };
 
     let (api, db) = tokio::join!(
-        state.client.get::<api::User>(username.to_string()),
-        state.client.get::<db::User>(username.to_string()),
+        state.scratch_client.get::<api::User>(username.to_string()),
+        state.scratch_client.get::<db::User>(username.to_string()),
     );
 
     let response = match api {

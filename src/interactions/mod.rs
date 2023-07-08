@@ -57,7 +57,8 @@ pub async fn interaction_handler(
     let body_bytes = to_bytes(req).await.unwrap();
 
     state
-        .discord_public_key
+        .config
+        .public_key
         .verify(
             vec![timestamp.as_bytes(), &body_bytes].concat().as_ref(),
             &signature,

@@ -76,7 +76,7 @@ pub async fn run(
 
     let (db, scratch_api) = tokio::join!(
         state.pool.get_scratch_account(username.to_string()),
-        state.client.get::<api::User>(username.to_string()),
+        state.scratch_client.get::<api::User>(username.to_string()),
     );
 
     if let Some(account) = db.unwrap() {
