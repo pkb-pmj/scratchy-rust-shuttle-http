@@ -14,7 +14,7 @@ use crate::{
     database::{link_account, LinkResult},
     interactions::{context::MessageComponentInteraction, InteractionError},
     locales::Locale,
-    scratch::{api::studio::Comment, site::user_link, STUDIO_ID},
+    scratch::{api::studio::Comment, site::user_link, ScratchClient, STUDIO_ID},
     state::AppState,
 };
 
@@ -59,7 +59,11 @@ pub async fn run(
         });
     }
 
-    let comments = state.scratch_client.get::<Vec<Comment>>(STUDIO_ID).await.unwrap();
+    let comments = state
+        .reqwest_client
+        .get_scratch::<Vec<Comment>>(STUDIO_ID)
+        .await
+        .unwrap();
 
     let err = match validate_comment(comments, custom_id.to_owned()) {
         ValidateCommentResult::CommentNotFound => Some(locale.comment_not_found()),
