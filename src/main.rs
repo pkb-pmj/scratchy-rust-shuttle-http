@@ -42,6 +42,7 @@ async fn axum(
     let router = Router::new()
         .route("/hello", get(hello_world))
         .route("/interactions", post(interaction_handler))
+        .merge(linked_roles::router())
         .with_state(state);
 
     Ok(router.into())
