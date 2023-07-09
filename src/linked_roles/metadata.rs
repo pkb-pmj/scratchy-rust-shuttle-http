@@ -7,10 +7,10 @@ use super::model::{Metadata, MetadataType};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct RoleConnectionData {
-    scratcher: bool,
-    followers: i64,
+    pub scratcher: bool,
+    pub followers: i64,
     #[serde(with = "time::serde::iso8601")]
-    age: OffsetDateTime,
+    pub age: OffsetDateTime,
 }
 
 pub fn metadata() -> Vec<Metadata> {
