@@ -46,10 +46,12 @@ pub struct Metadata {
     /// name of the metadata field (max 100 characters)
     pub name: String,
     /// translations of the name
+    #[serde(default)]
     pub name_localizations: HashMap<String, String>,
     /// description of the metadata field (max 200 characters)
     pub description: String,
     /// translations of the description
+    #[serde(default)]
     pub description_localizations: HashMap<String, String>,
 }
 
