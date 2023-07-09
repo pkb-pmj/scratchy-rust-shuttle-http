@@ -17,6 +17,8 @@ use sqlx::PgPool;
 use state::AppState;
 use tracing_panic::panic_hook;
 
+use crate::linked_roles::register_metadata;
+
 async fn hello_world() -> &'static str {
     "Hello, world!"
 }
@@ -38,6 +40,10 @@ async fn axum(
     register_commands(state.config.token.to_string())
         .await
         .expect("failed to register commands");
+
+    register_metadata(&state)
+        .await
+        .expect("failed to register metadata");
 
     let router = Router::new()
         .route("/hello", get(hello_world))
