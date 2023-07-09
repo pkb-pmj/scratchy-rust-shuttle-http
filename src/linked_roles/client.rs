@@ -5,7 +5,10 @@ use reqwest::Client;
 
 use crate::state::Config;
 
-use super::model::{Metadata, RoleConnection};
+use super::{
+    metadata::RoleConnectionData,
+    model::{Metadata, RoleConnection},
+};
 
 pub fn create_oauth_client(config: &Config) -> BasicClient {
     let client_id = ClientId::new(config.client_id.to_owned());
@@ -21,6 +24,7 @@ pub fn create_oauth_client(config: &Config) -> BasicClient {
 #[async_trait]
 pub trait RoleConnectionClient {
     type Error;
+    type Data;
 
     async fn get_metadata(
         &self,
@@ -39,14 +43,14 @@ pub trait RoleConnectionClient {
         &self,
         client_id: &str,
         token: &str,
-    ) -> Result<RoleConnection, Self::Error>;
+    ) -> Result<RoleConnection<Self::Data>, Self::Error>;
 
     async fn put_role_connection(
         &self,
         client_id: &str,
         token: &str,
-        metadata: &RoleConnection,
-    ) -> Result<RoleConnection, Self::Error>;
+        data: &RoleConnection<Self::Data>,
+    ) -> Result<RoleConnection<Self::Data>, Self::Error>;
 }
 
 fn role_connection_url(client_id: &str) -> String {
@@ -56,6 +60,7 @@ fn role_connection_url(client_id: &str) -> String {
 #[async_trait]
 impl RoleConnectionClient for Client {
     type Error = reqwest::Error;
+    type Data = RoleConnectionData;
 
     async fn get_metadata(
         &self,
@@ -89,7 +94,7 @@ impl RoleConnectionClient for Client {
         &self,
         client_id: &str,
         token: &str,
-    ) -> Result<RoleConnection, Self::Error> {
+    ) -> Result<RoleConnection<Self::Data>, Self::Error> {
         self.get(&role_connection_url(client_id))
             .bearer_auth(token)
             .send()
@@ -102,11 +107,11 @@ impl RoleConnectionClient for Client {
         &self,
         client_id: &str,
         token: &str,
-        metadata: &RoleConnection,
-    ) -> Result<RoleConnection, Self::Error> {
+        data: &RoleConnection<Self::Data>,
+    ) -> Result<RoleConnection<Self::Data>, Self::Error> {
         self.put(&role_connection_url(client_id))
             .bearer_auth(token)
-            .json(&metadata)
+            .json(&data)
             .send()
             .await?
             .json()

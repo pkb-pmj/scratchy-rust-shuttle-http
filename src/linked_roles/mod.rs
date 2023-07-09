@@ -1,4 +1,5 @@
 mod client;
+mod metadata;
 pub mod model;
 mod router;
 
