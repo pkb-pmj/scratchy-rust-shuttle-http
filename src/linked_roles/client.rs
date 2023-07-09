@@ -75,6 +75,7 @@ impl RoleConnectionClient for Client {
             .header(AUTHORIZATION, &format!("Bot {}", token))
             .send()
             .await?
+            .error_for_status()?
             .json()
             .await
     }
@@ -90,6 +91,7 @@ impl RoleConnectionClient for Client {
             .json(&metadata)
             .send()
             .await?
+            .error_for_status()?
             .json()
             .await
     }
@@ -103,6 +105,7 @@ impl RoleConnectionClient for Client {
             .bearer_auth(token)
             .send()
             .await?
+            .error_for_status()?
             .json()
             .await
     }
@@ -118,6 +121,7 @@ impl RoleConnectionClient for Client {
             .json(&data)
             .send()
             .await?
+            .error_for_status()?
             .json()
             .await
     }
