@@ -55,11 +55,11 @@ pub struct Metadata {
 
 /// User Application Role Connection Structure.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
-pub struct RoleConnection {
+pub struct RoleConnection<T = HashMap<String, String>> {
     /// the vanity name of the platform a bot has connected (max 50 characters)
     pub platform_name: Option<String>,
     /// the username on the platform a bot has connected (max 100 characters)
     pub platform_username: Option<String>,
     /// object mapping application role connection metadata keys to their stringified value (max 100 characters) for the user on the platform a bot has connected
-    pub metadata: HashMap<String, String>,
+    pub metadata: T,
 }
