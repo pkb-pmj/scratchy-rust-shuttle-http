@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 /// Application Role Connection Metadata Type.
@@ -47,13 +47,23 @@ pub struct Metadata {
     /// name of the metadata field (max 100 characters)
     pub name: String,
     /// translations of the name
-    #[serde(default)]
+    #[serde(deserialize_with = "deserialize_null_default")]
     pub name_localizations: HashMap<String, String>,
     /// description of the metadata field (max 200 characters)
     pub description: String,
     /// translations of the description
-    #[serde(default)]
+    #[serde(deserialize_with = "deserialize_null_default")]
     pub description_localizations: HashMap<String, String>,
+}
+
+/// https://github.com/serde-rs/serde/issues/1098#issuecomment-760711617
+fn deserialize_null_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    T: Default + Deserialize<'de>,
+    D: Deserializer<'de>,
+{
+    let opt = Option::deserialize(deserializer)?;
+    Ok(opt.unwrap_or_default())
 }
 
 /// User Application Role Connection Structure.
