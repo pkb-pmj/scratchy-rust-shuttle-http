@@ -39,6 +39,7 @@ pub enum MetadataType {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Metadata {
     /// type of metadata value
+    #[serde(rename = "type")]
     pub kind: MetadataType,
     /// dictionary key for the metadata field
     /// (must be a-z, 0-9, or _ characters; max 50 characters)
