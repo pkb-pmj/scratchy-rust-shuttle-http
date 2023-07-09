@@ -53,6 +53,10 @@ pub trait RoleConnectionClient {
     ) -> Result<RoleConnection<Self::Data>, Self::Error>;
 }
 
+fn metadata_url(client_id: &str) -> String {
+    format!("https://discord.com/api/v10/applications/{client_id}/role-connections/metadata")
+}
+
 fn role_connection_url(client_id: &str) -> String {
     format!("https://discord.com/api/v10/users/@me/applications/{client_id}/role-connection")
 }
@@ -67,7 +71,7 @@ impl RoleConnectionClient for Client {
         client_id: &str,
         token: &str,
     ) -> Result<Vec<Metadata>, Self::Error> {
-        self.get(&role_connection_url(client_id))
+        self.get(&metadata_url(client_id))
             .header(AUTHORIZATION, &format!("Bot {}", token))
             .send()
             .await?
@@ -81,7 +85,7 @@ impl RoleConnectionClient for Client {
         token: &str,
         metadata: Vec<Metadata>,
     ) -> Result<Vec<Metadata>, Self::Error> {
-        self.put(&role_connection_url(client_id))
+        self.put(&metadata_url(client_id))
             .header(AUTHORIZATION, &format!("Bot {}", token))
             .json(&metadata)
             .send()
