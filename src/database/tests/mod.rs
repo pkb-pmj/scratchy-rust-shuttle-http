@@ -1,3 +1,5 @@
+mod token;
+
 use sqlx::PgPool;
 
 use super::*;

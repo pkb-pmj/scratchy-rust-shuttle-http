@@ -5,6 +5,8 @@ use async_trait::async_trait;
 use sqlx::{Executor, PgPool, Postgres};
 use twilight_model::id::{marker::UserMarker, Id};
 
+use crate::linked_roles::Token;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiscordAccount {
     pub id: Id<UserMarker>,
@@ -45,6 +47,8 @@ pub trait Database {
         username: String,
         id: Id<UserMarker>,
     ) -> Result<ScratchAccount, Self::Error>;
+
+    async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error>;
 }
 
 // Not sure how this works, but it works
@@ -154,6 +158,23 @@ where
         })
         .fetch_one(self)
         .await
+    }
+
+    async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error> {
+        Ok(sqlx::query_as!(
+            Token,
+            r#"
+                INSERT INTO tokens (id, access_token, refresh_token, expires_at)
+                VALUES ($1, $2, $3, $4)
+                RETURNING access_token, refresh_token, expires_at
+            "#,
+            id.to_string(),
+            token.access_token,
+            token.refresh_token,
+            token.expires_at,
+        )
+        .fetch_one(self)
+        .await?)
     }
 }
 
