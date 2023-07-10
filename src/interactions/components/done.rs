@@ -69,16 +69,15 @@ pub async fn run(
         .await
         .unwrap();
 
-    let err = match validate_comment(comments, custom_id.to_owned()) {
-        ValidateCommentResult::CommentNotFound => Some(locale.comment_not_found()),
-        ValidateCommentResult::InvalidAccount(actual) => {
-            Some(locale.wrong_account(&user_link(&actual), &user_link(&custom_id.username)))
-        }
-        ValidateCommentResult::InvalidCode(_) => Some(locale.invalid_code()),
-        ValidateCommentResult::Ok => None,
-    };
+    if let Err(err) = validate_comment(comments, custom_id.to_owned()) {
+        let message = match err {
+            ValidateCommentError::CommentNotFound => locale.comment_not_found(),
+            ValidateCommentError::InvalidAccount(actual) => {
+                locale.wrong_account(&user_link(&actual), &user_link(&custom_id.username))
+            }
+            ValidateCommentError::InvalidCode(_) => locale.invalid_code(),
+        };
 
-    if let Some(message) = err {
         return Ok(InteractionResponse {
             kind: InteractionResponseType::ChannelMessageWithSource,
             data: Some(
@@ -87,7 +86,7 @@ pub async fn run(
                     .build(),
             ),
         });
-    }
+    };
 
     let message = match link_account(&state.pool, custom_id.username.to_owned(), author_id)
         .await
@@ -116,14 +115,16 @@ pub async fn run(
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum ValidateCommentResult {
-    Ok,
+enum ValidateCommentError {
     InvalidAccount(String),
     InvalidCode(String),
     CommentNotFound,
 }
 
-fn validate_comment(comments: Vec<Comment>, custom_id: CustomId) -> ValidateCommentResult {
+fn validate_comment(
+    comments: Vec<Comment>,
+    custom_id: CustomId,
+) -> Result<(), ValidateCommentError> {
     let comments: Vec<_> = comments
         .into_iter()
         .filter(|comment| comment.datetime_created > custom_id.generated)
@@ -135,15 +136,15 @@ fn validate_comment(comments: Vec<Comment>, custom_id: CustomId) -> ValidateComm
     };
 
     if let Some(_) = comments.iter().filter(valid_code).find(valid_username) {
-        ValidateCommentResult::Ok
+        Ok(())
     } else {
-        if let Some(comment) = comments.iter().find(valid_code) {
-            ValidateCommentResult::InvalidAccount(comment.author.username.to_string())
+        Err(if let Some(comment) = comments.iter().find(valid_code) {
+            ValidateCommentError::InvalidAccount(comment.author.username.to_string())
         } else if let Some(comment) = comments.iter().find(valid_username) {
-            ValidateCommentResult::InvalidCode(comment.content.to_string())
+            ValidateCommentError::InvalidCode(comment.content.to_string())
         } else {
-            ValidateCommentResult::CommentNotFound
-        }
+            ValidateCommentError::CommentNotFound
+        })
     }
 }
 
@@ -199,7 +200,7 @@ mod tests {
 
         let result = validate_comment(comments, custom_id());
 
-        assert_eq!(result, ValidateCommentResult::Ok);
+        assert_eq!(result, Ok(()));
     }
 
     #[test]
@@ -208,7 +209,7 @@ mod tests {
 
         let result = validate_comment(comments, custom_id());
 
-        assert_eq!(result, ValidateCommentResult::CommentNotFound);
+        assert_eq!(result, Err(ValidateCommentError::CommentNotFound));
     }
 
     #[test]
@@ -221,7 +222,10 @@ mod tests {
 
         let result = validate_comment(comments, custom_id());
 
-        assert_eq!(result, ValidateCommentResult::InvalidCode("code2".into()));
+        assert_eq!(
+            result,
+            Err(ValidateCommentError::InvalidCode("code2".into()))
+        );
     }
 
     #[test]
@@ -236,7 +240,7 @@ mod tests {
 
         assert_eq!(
             result,
-            ValidateCommentResult::InvalidAccount("username2".into())
+            Err(ValidateCommentError::InvalidAccount("username2".into()))
         );
     }
 
@@ -253,7 +257,7 @@ mod tests {
 
         assert_eq!(
             result,
-            ValidateCommentResult::InvalidAccount("username2".into())
+            Err(ValidateCommentError::InvalidAccount("username2".into()))
         );
     }
 
@@ -274,6 +278,6 @@ mod tests {
 
         let result = validate_comment(comments, custom_id);
 
-        assert_eq!(result, ValidateCommentResult::CommentNotFound);
+        assert_eq!(result, Err(ValidateCommentError::CommentNotFound));
     }
 }
