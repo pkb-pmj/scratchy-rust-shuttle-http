@@ -1,16 +1,36 @@
 {
   "db": "PostgreSQL",
-  "43f8a7a5df3bb3c5d477af04b9e5628276126256c7dee9b3dcf21350aefb2a58": {
+  "0546f64d84b26dd5d0cab06dedc273402f0abdd4f3358c7085f70767092d4fe2": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "access_token",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "refresh_token",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "expires_at",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
       "parameters": {
         "Left": [
           "Text"
         ]
       }
     },
-    "query": "\n            INSERT INTO discord_accounts (id)\n                VALUES ($1)\n                ON CONFLICT DO NOTHING;\n        "
+    "query": "\n                SELECT access_token, refresh_token, expires_at\n                FROM tokens\n                WHERE id = $1\n            "
   },
   "8262ea47cf2fc43a58a27609fd04389e4121e7e700b5ad17d8473159e68a71ed": {
     "describe": {
@@ -131,31 +151,39 @@
     },
     "query": "\n                SELECT *\n                FROM scratch_accounts\n                WHERE lower(username) = lower($1)\n            "
   },
-  "e37d71ceb0ef26582f88bc9724256f48447cd2535e61ace4ba29f19bf4f2f7ac": {
+  "e920d15d43478752be671d098b552a0e0e68a61918bfaba764824558bc98c994": {
     "describe": {
       "columns": [
         {
-          "name": "username",
+          "name": "access_token",
           "ordinal": 0,
           "type_info": "Text"
         },
         {
-          "name": "id",
+          "name": "refresh_token",
           "ordinal": 1,
           "type_info": "Text"
+        },
+        {
+          "name": "expires_at",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
         }
       ],
       "nullable": [
+        false,
         false,
         false
       ],
       "parameters": {
         "Left": [
           "Text",
-          "Text"
+          "Text",
+          "Text",
+          "Timestamptz"
         ]
       }
     },
-    "query": "\n            INSERT INTO scratch_accounts (username, id)\n                VALUES ($1, $2)\n                ON CONFLICT (lower(username)) DO NOTHING\n                RETURNING username, id;\n        "
+    "query": "\n                INSERT INTO tokens (id, access_token, refresh_token, expires_at)\n                VALUES ($1, $2, $3, $4)\n                ON CONFLICT (id) DO UPDATE SET\n                    id = EXCLUDED.id,\n                    access_token = EXCLUDED.access_token,\n                    refresh_token = EXCLUDED.refresh_token,\n                    expires_at = EXCLUDED.expires_at\n                RETURNING access_token, refresh_token, expires_at\n            "
   }
 }
