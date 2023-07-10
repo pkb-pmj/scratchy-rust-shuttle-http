@@ -2,7 +2,7 @@ use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
     routing::get,
-    Json, Router,
+    Router,
 };
 use axum_extra::extract::CookieJar;
 use hyper::{header, HeaderMap, StatusCode};
@@ -11,9 +11,12 @@ use oauth2::{
     TokenResponse,
 };
 use serde::Deserialize;
+use sqlx::PgPool;
 use twilight_http::Client as TwilightClient;
 
-use crate::state::AppState;
+use crate::{database::Database, state::AppState};
+
+use super::update::RoleConnectionUpdater;
 
 static COOKIE_NAME: &str = "oauth_state";
 
@@ -54,27 +57,41 @@ struct AuthRequest {
 async fn callback(
     Query(query): Query<AuthRequest>,
     State(oauth_client): State<BasicClient>,
+    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     jar: CookieJar,
 ) -> impl IntoResponse {
-    let state = jar.get(COOKIE_NAME).unwrap().value();
-    if query.state != state {
-        return (StatusCode::FORBIDDEN, Json(None));
+    let cookie_state = jar.get(COOKIE_NAME).unwrap().value();
+    if query.state != cookie_state {
+        return StatusCode::FORBIDDEN;
     }
 
     let token = oauth_client
         .exchange_code(AuthorizationCode::new(query.code))
         .request_async(async_http_client)
-        .await;
-    let token = token.unwrap();
+        .await
+        .unwrap();
 
     let access_token = format!("Bearer {}", token.access_token().secret());
     let discord_client = TwilightClient::new(access_token);
 
-    let user = discord_client.current_authorization().await;
-    let user = user.unwrap().model().await;
-    let user = user.unwrap();
+    let current_authorization = discord_client
+        .current_authorization()
+        .await
+        .unwrap()
+        .model()
+        .await
+        .unwrap();
 
-    // TODO: store tokens in database, trigger linked roles flow
+    // Safe to unwrap because we always request the `identify` scope
+    let id = current_authorization.user.unwrap().id;
 
-    (StatusCode::OK, Json(Some(user)))
+    // Safe to unwrap because we assume Discord returns all the necessary fields
+    pool.write_token(id, token.try_into().unwrap())
+        .await
+        .unwrap();
+
+    state.update_role_connection(id).await.unwrap();
+
+    StatusCode::OK
 }
