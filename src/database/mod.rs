@@ -166,6 +166,11 @@ where
             r#"
                 INSERT INTO tokens (id, access_token, refresh_token, expires_at)
                 VALUES ($1, $2, $3, $4)
+                ON CONFLICT (id) DO UPDATE SET
+                    id = EXCLUDED.id,
+                    access_token = EXCLUDED.access_token,
+                    refresh_token = EXCLUDED.refresh_token,
+                    expires_at = EXCLUDED.expires_at
                 RETURNING access_token, refresh_token, expires_at
             "#,
             id.to_string(),

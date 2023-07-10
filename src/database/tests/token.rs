@@ -36,3 +36,20 @@ async fn write_token_expired(pool: PgPool) {
 
     assert_eq!(actual, expected);
 }
+
+#[sqlx::test(fixtures("linked_accounts", "tokens"))]
+async fn overwrite_existing_token(pool: PgPool) {
+    let id = "755497867606622450".parse().unwrap();
+
+    let token = Token {
+        access_token: "access_token".into(),
+        refresh_token: "refresh_token".into(),
+        expires_at: datetime!(2000-01-01 00:00:00 UTC),
+    };
+
+    let expected = token.clone();
+
+    let actual = pool.write_token(id, token).await.unwrap();
+
+    assert_eq!(actual, expected);
+}
