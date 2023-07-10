@@ -24,9 +24,9 @@ use crate::{
     },
     locales::Locale,
     scratch::{
-        api,
+        api::ScratchAPIClient,
         site::{user_link, username_is_valid},
-        ScratchAPIError, ScratchClient, STUDIO_URL,
+        ScratchAPIError, STUDIO_URL,
     },
     state::AppState,
 };
@@ -76,9 +76,7 @@ pub async fn run(
 
     let (db, scratch_api) = tokio::join!(
         state.pool.get_scratch_account(username.to_string()),
-        state
-            .reqwest_client
-            .get_scratch::<api::User>(username.to_string()),
+        state.reqwest_client.get_scratch_api_user(&username),
     );
 
     if let Some(account) = db.unwrap() {

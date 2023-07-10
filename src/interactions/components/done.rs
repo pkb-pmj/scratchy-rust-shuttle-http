@@ -14,7 +14,11 @@ use crate::{
     database::{link_account, LinkResult},
     interactions::{context::MessageComponentInteraction, InteractionError},
     locales::Locale,
-    scratch::{api::studio::Comment, site::user_link, ScratchClient, STUDIO_ID},
+    scratch::{
+        api::{studio::Comment, ScratchAPIClient},
+        site::user_link,
+        STUDIO_ID,
+    },
     state::AppState,
 };
 
@@ -61,7 +65,7 @@ pub async fn run(
 
     let comments = state
         .reqwest_client
-        .get_scratch::<Vec<Comment>>(STUDIO_ID)
+        .get_scratch_api_studio_comments(STUDIO_ID)
         .await
         .unwrap();
 

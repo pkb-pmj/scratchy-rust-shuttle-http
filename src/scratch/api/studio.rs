@@ -1,16 +1,6 @@
 use serde::Deserialize;
 use time::OffsetDateTime;
 
-use crate::scratch::Url;
-
-impl Url for Vec<Comment> {
-    type UrlArgs = i64;
-
-    fn url(studio_id: Self::UrlArgs) -> String {
-        format!("https://api.scratch.mit.edu/studios/{studio_id}/comments")
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Comment {
     pub id: i64,

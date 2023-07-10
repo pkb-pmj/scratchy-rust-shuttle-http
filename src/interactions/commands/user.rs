@@ -15,7 +15,7 @@ use crate::{
     embeds::Color,
     interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::{ExtendLocaleEmbed, Locale},
-    scratch::{api, db, site::user_link, ScratchAPIError, ScratchClient},
+    scratch::{api::ScratchAPIClient, db::ScratchDBClient, site::user_link, ScratchAPIError},
     state::AppState,
 };
 
@@ -54,12 +54,8 @@ pub async fn run(
     };
 
     let (api, db) = tokio::join!(
-        state
-            .reqwest_client
-            .get_scratch::<api::User>(username.to_string()),
-        state
-            .reqwest_client
-            .get_scratch::<db::User>(username.to_string()),
+        state.reqwest_client.get_scratch_api_user(username),
+        state.reqwest_client.get_scratch_db_user(username),
     );
 
     let response = match api {

@@ -8,8 +8,8 @@ use twilight_model::id::{marker::UserMarker, Id};
 use crate::{
     database::{Database, ScratchAccount},
     scratch::{
-        db::{self, user::Status},
-        ScratchAPIError, ScratchClient,
+        db::{self, user::Status, ScratchDBClient},
+        ScratchAPIError,
     },
     state::AppState,
 };
@@ -106,7 +106,7 @@ async fn fetch_scratch_data(
 
     for account in linked_accounts {
         let client = client.clone();
-        set.spawn(async move { client.get_scratch::<db::User>(account.username).await });
+        set.spawn(async move { client.get_scratch_db_user(&account.username).await });
     }
 
     while let Some(result) = set.join_next().await {
