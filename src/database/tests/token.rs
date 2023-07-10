@@ -1,5 +1,5 @@
 use sqlx::PgPool;
-use time::{Duration, OffsetDateTime};
+use time::{macros::datetime, Duration, OffsetDateTime};
 
 use crate::{database::Database, linked_roles::Token};
 
@@ -27,14 +27,12 @@ async fn write_token_expired(pool: PgPool) {
     let token = Token {
         access_token: "access_token".into(),
         refresh_token: "refresh_token".into(),
-        expires_at: OffsetDateTime::now_utc() - Duration::seconds(10),
+        expires_at: datetime!(2000-01-01 00:00:00 UTC),
     };
 
     let expected = token.clone();
 
     let actual = pool.write_token(id, token).await.unwrap();
 
-    assert_eq!(actual.access_token, expected.access_token);
-    assert_eq!(actual.refresh_token, expected.refresh_token);
-    assert!(actual.expires_at < OffsetDateTime::now_utc());
+    assert_eq!(actual, expected);
 }
