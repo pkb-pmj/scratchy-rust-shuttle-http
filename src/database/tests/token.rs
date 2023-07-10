@@ -3,6 +3,29 @@ use time::{macros::datetime, Duration, OffsetDateTime};
 
 use crate::{database::Database, linked_roles::Token};
 
+#[sqlx::test(fixtures("linked_accounts", "tokens"))]
+async fn read_existing_token(pool: PgPool) {
+    let id = "755497867606622450".parse().unwrap();
+
+    let expected = Token {
+        access_token: "access_token".into(),
+        refresh_token: "refresh_token".into(),
+        expires_at: datetime!(2023-07-10 12:00:00 UTC),
+    };
+
+    let actual = pool.get_token(id).await.unwrap();
+
+    assert_eq!(actual, Some(expected));
+}
+#[sqlx::test(fixtures("linked_accounts", "tokens"))]
+async fn read_nonexistent_token(pool: PgPool) {
+    let id = "775316334259077120".parse().unwrap();
+
+    let actual = pool.get_token(id).await.unwrap();
+
+    assert_eq!(actual, None);
+}
+
 #[sqlx::test(fixtures("linked_accounts"))]
 async fn write_token(pool: PgPool) {
     let id = "755497867606622450".parse().unwrap();

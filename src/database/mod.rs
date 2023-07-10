@@ -48,6 +48,8 @@ pub trait Database {
         id: Id<UserMarker>,
     ) -> Result<ScratchAccount, Self::Error>;
 
+    async fn get_token(self, id: Id<UserMarker>) -> Result<Option<Token>, Self::Error>;
+
     async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error>;
 }
 
@@ -158,6 +160,20 @@ where
         })
         .fetch_one(self)
         .await
+    }
+
+    async fn get_token(self, id: Id<UserMarker>) -> Result<Option<Token>, Self::Error> {
+        Ok(sqlx::query_as!(
+            Token,
+            r#"
+                SELECT access_token, refresh_token, expires_at
+                FROM tokens
+                WHERE id = $1
+            "#,
+            id.to_string(),
+        )
+        .fetch_optional(self)
+        .await?)
     }
 
     async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error> {
