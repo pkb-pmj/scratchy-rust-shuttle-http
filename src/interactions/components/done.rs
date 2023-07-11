@@ -11,8 +11,9 @@ use twilight_model::{
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{
-    database::{link_account, LinkError},
+    database::{link_account, Database, LinkError},
     interactions::{context::MessageComponentInteraction, InteractionError},
+    linked_roles::RoleConnectionUpdater,
     locales::Locale,
     scratch::{
         api::{studio::Comment, ScratchAPIClient},
@@ -113,9 +114,17 @@ pub async fn run(
         });
     }
 
-    let message = locale.successfully_linked(
-        &author_id.mention().to_string(),
-        &user_link(&custom_id.username),
+    if state.pool.get_token(author_id).await.unwrap().is_some() {
+        state.update_role_connection(author_id).await.unwrap();
+    }
+
+    let message = format!(
+        "{}\n\n{}",
+        locale.successfully_linked(
+            &author_id.mention().to_string(),
+            &user_link(&custom_id.username),
+        ),
+        locale.linked_roles_message(),
     );
 
     Ok(InteractionResponse {

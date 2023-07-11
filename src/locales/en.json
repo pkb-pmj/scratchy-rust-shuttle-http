@@ -37,5 +37,6 @@
 	"successfully_linked": "Successfully linked {user} to {id}!",
 	"no_linked_discord_account": "{user} doesn't have a linked Discord account.",
 	"no_linked_scratch_accounts": "{id} doesn't have any linked Scratch accounts.",
-	"linked_accounts": "{user} - linked accounts:"
+	"linked_accounts": "{user} - linked accounts:",
+	"linked_roles_message": "Your connected Scratch accounts are now available in every server managed by Scratchy. Scratchy uses Discord's builtin [Linked Roles](https://support.discord.com/hc/en-us/articles/8063233404823-Connections-Linked-Roles-Community-Members) for a simple, robust and customizable role verification system.\nIf this server has set up linked roles, go to **Server menu dropdown > Linked Roles** and claim your roles if you didn't receive them automatically."
 }

@@ -37,5 +37,6 @@
 	"successfully_linked": "Połączono {user} z {id}!",
 	"no_linked_discord_account": "{user} nie ma połączonego konta Discord.",
 	"no_linked_scratch_accounts": "{id} nie ma połączonych kont Scratch.",
-	"linked_accounts": "{user} - połączone konta:"
+	"linked_accounts": "{user} - połączone konta:",
+	"linked_roles_message": "Towje połączone konta Scratch są teraz dostępne na każdym serwerze na którym jest Scratchy. Scratchy używa wbudowanej funkcji Discorda - [Połączonych Ról](https://support.discord.com/hc/pl/articles/8063233404823-Połączone-konta-i-Powiązane-role-Członkowie-społeczności), aby zapewnić prosty, solidny i konfigurowalny system weryfikacji ról.\nJeżeli na tym serwerze są skonfigurowane połączone role, przejdź do rozwijanego menu **Serwer > Połączone role** i zdobądź swoje role, jeżeli nie otrzymałeś ich automatycznie."
 }
