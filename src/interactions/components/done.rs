@@ -11,7 +11,7 @@ use twilight_model::{
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{
-    database::{link_account, LinkResult},
+    database::{link_account, LinkError},
     interactions::{context::MessageComponentInteraction, InteractionError},
     locales::Locale,
     scratch::{
@@ -88,20 +88,35 @@ pub async fn run(
         });
     };
 
-    let message = match link_account(&state.pool, custom_id.username.to_owned(), author_id)
+    if let Err(err) = link_account(&state.pool, custom_id.username.to_owned(), author_id)
         .await
         .unwrap()
     {
-        LinkResult::AlreadyLinkedToYou => {
-            locale.already_linked_to_you(&user_link(&custom_id.username))
-        }
-        LinkResult::AlreadyLinkedToOther(id) => locale
-            .already_linked_to_other(&id.mention().to_string(), &user_link(&custom_id.username)),
-        LinkResult::SuccessfullyLinked => locale.successfully_linked(
-            &author_id.mention().to_string(),
-            &user_link(&custom_id.username),
-        ),
-    };
+        let message = match err {
+            LinkError::AlreadyLinkedToYou => {
+                locale.already_linked_to_you(&user_link(&custom_id.username))
+            }
+            LinkError::AlreadyLinkedToOther(id) => locale.already_linked_to_other(
+                &id.mention().to_string(),
+                &user_link(&custom_id.username),
+            ),
+        };
+
+        return Ok(InteractionResponse {
+            kind: InteractionResponseType::ChannelMessageWithSource,
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(message)
+                    .allowed_mentions(Default::default())
+                    .build(),
+            ),
+        });
+    }
+
+    let message = locale.successfully_linked(
+        &author_id.mention().to_string(),
+        &user_link(&custom_id.username),
+    );
 
     Ok(InteractionResponse {
         kind: InteractionResponseType::ChannelMessageWithSource,

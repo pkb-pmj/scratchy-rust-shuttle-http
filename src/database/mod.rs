@@ -200,24 +200,23 @@ where
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum LinkResult {
+pub enum LinkError {
     AlreadyLinkedToYou,
     AlreadyLinkedToOther(Id<UserMarker>),
-    SuccessfullyLinked,
 }
 
 pub async fn link_account(
     pool: &PgPool,
     username: String,
     id: Id<UserMarker>,
-) -> Result<LinkResult, sqlx::Error> {
+) -> Result<Result<(), LinkError>, sqlx::Error> {
     let mut tx = pool.begin().await?;
 
     if let Some(already_linked) = tx.get_scratch_account(username.to_owned()).await? {
         if already_linked.id == id {
-            return Ok(LinkResult::AlreadyLinkedToYou);
+            return Ok(Err(LinkError::AlreadyLinkedToYou));
         } else {
-            return Ok(LinkResult::AlreadyLinkedToOther(already_linked.id));
+            return Ok(Err(LinkError::AlreadyLinkedToOther(already_linked.id)));
         }
     }
 
@@ -229,5 +228,5 @@ pub async fn link_account(
 
     tx.commit().await?;
 
-    Ok(LinkResult::SuccessfullyLinked)
+    Ok(Ok(()))
 }

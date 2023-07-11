@@ -191,7 +191,7 @@ async fn test_link_account(pool: PgPool) {
     .await
     .unwrap();
 
-    assert_eq!(result, LinkResult::AlreadyLinkedToYou);
+    assert_eq!(result, Err(LinkError::AlreadyLinkedToYou));
 
     let result = link_account(
         &pool,
@@ -203,7 +203,9 @@ async fn test_link_account(pool: PgPool) {
 
     assert_eq!(
         result,
-        LinkResult::AlreadyLinkedToOther("775316334259077120".parse().unwrap())
+        Err(LinkError::AlreadyLinkedToOther(
+            "775316334259077120".parse().unwrap()
+        ))
     );
 
     let result = link_account(
@@ -214,5 +216,5 @@ async fn test_link_account(pool: PgPool) {
     .await
     .unwrap();
 
-    assert_eq!(result, LinkResult::SuccessfullyLinked);
+    assert_eq!(result, Ok(()));
 }
