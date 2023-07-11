@@ -127,7 +127,7 @@ fn find_metadata_values(accounts: Vec<db::User>) -> RoleConnection<RoleConnectio
         .iter()
         .any(|account| account.status == Some(Status::Scratcher));
 
-    let age = accounts.iter().map(|account| account.joined).min().unwrap();
+    let joined = accounts.iter().map(|account| account.joined).min().unwrap();
 
     let max_followers = accounts
         .into_iter()
@@ -149,7 +149,7 @@ fn find_metadata_values(accounts: Vec<db::User>) -> RoleConnection<RoleConnectio
                 .statistics
                 .map(|statistics| statistics.followers)
                 .unwrap_or(0),
-            age,
+            joined,
         },
     }
 }

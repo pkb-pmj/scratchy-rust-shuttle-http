@@ -10,7 +10,7 @@ pub struct RoleConnectionData {
     pub scratcher: bool,
     pub followers: i64,
     #[serde(with = "time::serde::iso8601")]
-    pub age: OffsetDateTime,
+    pub joined: OffsetDateTime,
 }
 
 pub fn metadata() -> Vec<Metadata> {
@@ -39,13 +39,13 @@ pub fn metadata() -> Vec<Metadata> {
         },
         Metadata {
             kind: MetadataType::DatetimeGreaterThanOrEqual,
-            key: "age".into(),
-            name: "Account age".into(),
-            name_localizations: HashMap::from([("pl".into(), "Wiek konta".into())]),
-            description: "The age of the user's oldest account".into(),
+            key: "joined".into(),
+            name: "Joined".into(),
+            name_localizations: HashMap::from([("pl".into(), "Data dołączenia".into())]),
+            description: "Creation date of the user's oldest account".into(),
             description_localizations: HashMap::from([(
                 "pl".into(),
-                "Wiek najstarszego konta użytkownika".into(),
+                "Data założenia najstarszego konta użytkownika".into(),
             )]),
         },
     ]
