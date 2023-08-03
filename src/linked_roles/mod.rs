@@ -1,3 +1,4 @@
+mod background_updater;
 mod client;
 mod metadata;
 pub mod model;
@@ -7,6 +8,7 @@ mod token;
 mod update;
 
 pub use client::create_oauth_client;
+pub use metadata::RoleConnectionData;
 pub use register::register_metadata;
 pub use router::router;
 pub use token::{OAuthToken, Token};

@@ -1,0 +1,8 @@
+CREATE TABLE metadata (
+	id TEXT PRIMARY KEY,
+    scratcher BOOLEAN NOT NULL,
+    followers BIGINT NOT NULL,
+    joined TIMESTAMP WITH TIME ZONE NOT NULL,
+	updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+	FOREIGN KEY (id) REFERENCES discord_accounts (id)
+);

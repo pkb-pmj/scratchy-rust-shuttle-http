@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use sqlx::{Executor, PgPool, Postgres};
 use twilight_model::id::{marker::UserMarker, Id};
 
-use crate::linked_roles::Token;
+use crate::linked_roles::{RoleConnectionData, Token};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiscordAccount {
@@ -51,6 +51,16 @@ pub trait Database {
     async fn get_token(self, id: Id<UserMarker>) -> Result<Option<Token>, Self::Error>;
 
     async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error>;
+
+    async fn get_oldest_metadata(
+        self,
+    ) -> Result<Option<(Id<UserMarker>, RoleConnectionData)>, Self::Error>;
+
+    async fn write_metadata(
+        self,
+        id: Id<UserMarker>,
+        data: RoleConnectionData,
+    ) -> Result<RoleConnectionData, Self::Error>;
 }
 
 // Not sure how this works, but it works
@@ -196,6 +206,56 @@ where
         )
         .fetch_one(self)
         .await?)
+    }
+
+    async fn get_oldest_metadata(
+        self,
+    ) -> Result<Option<(Id<UserMarker>, RoleConnectionData)>, Self::Error> {
+        sqlx::query!(
+            r#"
+                SELECT id, scratcher, followers, joined
+                FROM metadata
+                ORDER BY updated_at ASC
+                LIMIT 1
+            "#
+        )
+        .map(|row| {
+            (
+                row.id.parse().unwrap(),
+                RoleConnectionData {
+                    scratcher: row.scratcher,
+                    followers: row.followers,
+                    joined: row.joined,
+                },
+            )
+        })
+        .fetch_optional(self)
+        .await
+    }
+
+    async fn write_metadata(
+        self,
+        id: Id<UserMarker>,
+        data: RoleConnectionData,
+    ) -> Result<RoleConnectionData, Self::Error> {
+        sqlx::query_as!(
+            RoleConnectionData,
+            r#"
+                UPDATE metadata SET
+                    scratcher = $2,
+                    followers = $3,
+                    joined = $4,
+                    updated_at = 'now'
+                WHERE id = $1
+                RETURNING scratcher, followers, joined
+            "#,
+            id.to_string(),
+            data.scratcher,
+            data.followers,
+            data.joined,
+        )
+        .fetch_one(self)
+        .await
     }
 }
 
