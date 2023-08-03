@@ -67,13 +67,23 @@ impl RoleConnectionUpdater for AppState {
 
         let role_connection = find_metadata_values(accounts);
 
-        self.reqwest_client
-            .put_role_connection(
-                &self.config.client_id,
-                &token.access_token,
-                &role_connection,
-            )
-            .await?;
+        let old_data = tx.get_metadata(id).await?;
+        
+        // Write even if unchanged to update `updated_at`
+        tx.write_metadata(id, &role_connection.metadata).await?;
+        
+        tx.commit().await?;
+        
+        // Only update if the metadata has changed or was `None`
+        if old_data.as_ref() != Some(&role_connection.metadata) {
+            self.reqwest_client
+                .put_role_connection(
+                    &self.config.client_id,
+                    &token.access_token,
+                    &role_connection,
+                )
+                .await?;
+        }
 
         Ok(role_connection)
     }
