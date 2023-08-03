@@ -1,4 +1,5 @@
 mod discord_scratch;
+mod metadata;
 mod token;
 
 use sqlx::PgPool;
