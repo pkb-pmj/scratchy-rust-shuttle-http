@@ -1,7 +1,5 @@
 use async_trait::async_trait;
-use oauth2::{reqwest::async_http_client, TokenResponse};
 use reqwest::Client;
-use time::OffsetDateTime;
 use tokio::task::JoinSet;
 use twilight_model::id::{marker::UserMarker, Id};
 
@@ -15,7 +13,10 @@ use crate::{
 };
 
 use super::{
-    client::RoleConnectionClient, metadata::RoleConnectionData, model::RoleConnection, OAuthToken,
+    client::RoleConnectionClient,
+    metadata::RoleConnectionData,
+    model::RoleConnection,
+    token_client::{TokenClient, TokenError},
 };
 
 #[async_trait]
@@ -30,8 +31,8 @@ pub trait RoleConnectionUpdater {
 
 #[derive(Debug, thiserror::Error)]
 pub enum RoleConnectionUpdateError {
-    #[error("user not authorized")]
-    UserNotAuthorized,
+    #[error(transparent)]
+    TokenError(#[from] TokenError),
     #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
     #[error(transparent)]
@@ -56,27 +57,9 @@ impl RoleConnectionUpdater for AppState {
         &self,
         id: Id<UserMarker>,
     ) -> Result<RoleConnection<RoleConnectionData>, Self::Error> {
+        let token = self.get_active_token(id).await?;
+
         let mut tx = self.pool.begin().await?;
-
-        let mut token = tx
-            .get_token(id)
-            .await?
-            .ok_or(Self::Error::UserNotAuthorized)?;
-
-        if token.expires_at < OffsetDateTime::now_utc() {
-            let oauth_token: OAuthToken = token.into();
-
-            // Safe to unwrap because we assume Discord returns all the necessary fields
-            let new_token = self
-                .oauth_client
-                .exchange_refresh_token(&oauth_token.refresh_token().unwrap())
-                .request_async(async_http_client)
-                .await?
-                .try_into()
-                .unwrap();
-
-            token = tx.write_token(id, new_token).await?;
-        }
 
         let linked_accounts = tx.get_linked_scratch_accounts(id).await?;
 

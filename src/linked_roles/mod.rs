@@ -5,6 +5,7 @@ pub mod model;
 mod register;
 mod router;
 mod token;
+mod token_client;
 mod update;
 
 pub use client::create_oauth_client;
