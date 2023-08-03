@@ -56,10 +56,15 @@ pub trait Database {
         self,
     ) -> Result<Option<(Id<UserMarker>, RoleConnectionData)>, Self::Error>;
 
+    async fn get_metadata(
+        self,
+        id: Id<UserMarker>,
+    ) -> Result<Option<RoleConnectionData>, Self::Error>;
+
     async fn write_metadata(
         self,
         id: Id<UserMarker>,
-        data: RoleConnectionData,
+        data: &RoleConnectionData,
     ) -> Result<RoleConnectionData, Self::Error>;
 }
 
@@ -233,10 +238,27 @@ where
         .await
     }
 
+    async fn get_metadata(
+        self,
+        id: Id<UserMarker>,
+    ) -> Result<Option<RoleConnectionData>, Self::Error> {
+        sqlx::query_as!(
+            RoleConnectionData,
+            r#"
+                SELECT scratcher, followers, joined
+                FROM metadata
+                WHERE id = $1
+            "#,
+            id.to_string(),
+        )
+        .fetch_optional(self)
+        .await
+    }
+
     async fn write_metadata(
         self,
         id: Id<UserMarker>,
-        data: RoleConnectionData,
+        data: &RoleConnectionData,
     ) -> Result<RoleConnectionData, Self::Error> {
         sqlx::query_as!(
             RoleConnectionData,
