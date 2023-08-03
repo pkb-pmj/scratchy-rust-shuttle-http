@@ -10,6 +10,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use linked_roles::spawn_background_updater;
 use shuttle_secrets::SecretStore;
 
 use interactions::{interaction_handler, register::register_commands};
@@ -49,7 +50,9 @@ async fn axum(
         .route("/hello", get(hello_world))
         .route("/interactions", post(interaction_handler))
         .merge(linked_roles::router())
-        .with_state(state);
+        .with_state(state.clone());
+
+    spawn_background_updater(state);
 
     Ok(router.into())
 }

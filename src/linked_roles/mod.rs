@@ -8,6 +8,7 @@ mod token;
 mod token_client;
 mod update;
 
+pub use background_updater::spawn as spawn_background_updater;
 pub use client::create_oauth_client;
 pub use metadata::RoleConnectionData;
 pub use register::register_metadata;
