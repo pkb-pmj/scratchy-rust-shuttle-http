@@ -54,6 +54,10 @@ async fn update_next_metadata(
         debug!("updating role connection metadata for {}", id);
         state.update_role_connection(id).await?;
         *last_updated_at = updated_at;
+    } else {
+        debug!("no records to update");
+        // Prevent infinite loop
+        *last_updated_at = OffsetDateTime::now_utc();
     };
     Ok(())
 }
