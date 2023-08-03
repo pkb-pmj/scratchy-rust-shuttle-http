@@ -3,6 +3,7 @@ mod tests;
 
 use async_trait::async_trait;
 use sqlx::{Executor, PgPool, Postgres};
+use time::OffsetDateTime;
 use twilight_model::id::{marker::UserMarker, Id};
 
 use crate::linked_roles::{RoleConnectionData, Token};
@@ -54,7 +55,7 @@ pub trait Database {
 
     async fn get_oldest_metadata(
         self,
-    ) -> Result<Option<(Id<UserMarker>, RoleConnectionData)>, Self::Error>;
+    ) -> Result<Option<(Id<UserMarker>, OffsetDateTime)>, Self::Error>;
 
     async fn get_metadata(
         self,
@@ -215,25 +216,16 @@ where
 
     async fn get_oldest_metadata(
         self,
-    ) -> Result<Option<(Id<UserMarker>, RoleConnectionData)>, Self::Error> {
+    ) -> Result<Option<(Id<UserMarker>, OffsetDateTime)>, Self::Error> {
         sqlx::query!(
             r#"
-                SELECT id, scratcher, followers, joined
+                SELECT id, updated_at
                 FROM metadata
                 ORDER BY updated_at ASC
                 LIMIT 1
             "#
         )
-        .map(|row| {
-            (
-                row.id.parse().unwrap(),
-                RoleConnectionData {
-                    scratcher: row.scratcher,
-                    followers: row.followers,
-                    joined: row.joined,
-                },
-            )
-        })
+        .map(|row| (row.id.parse().unwrap(), row.updated_at))
         .fetch_optional(self)
         .await
     }
