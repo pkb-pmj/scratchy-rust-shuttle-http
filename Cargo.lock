@@ -1940,43 +1940,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-shuttle-http"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "axum",
- "axum-extra",
- "base64 0.21.2",
- "ed25519-dalek",
- "hex",
- "hyper",
- "i18n_codegen",
- "oauth2",
- "rand 0.8.5",
- "reqwest",
- "rmp",
- "rmp-serde",
- "serde",
- "serde_json",
- "serde_repr",
- "shuttle-aws-rds",
- "shuttle-axum",
- "shuttle-runtime",
- "shuttle-secrets",
- "sqlx",
- "thiserror",
- "time",
- "tokio",
- "tracing",
- "tracing-panic",
- "twilight-http",
- "twilight-mention",
- "twilight-model",
- "twilight-util",
-]
-
-[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2078,6 +2041,43 @@ name = "scratch"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1792db035ce95be60c3f8853017b3999209281c24e2ba5bc8e59bf97a0c590c1"
+
+[[package]]
+name = "scratchy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "base64 0.21.2",
+ "ed25519-dalek",
+ "hex",
+ "hyper",
+ "i18n_codegen",
+ "oauth2",
+ "rand 0.8.5",
+ "reqwest",
+ "rmp",
+ "rmp-serde",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "shuttle-aws-rds",
+ "shuttle-axum",
+ "shuttle-runtime",
+ "shuttle-secrets",
+ "sqlx",
+ "thiserror",
+ "time",
+ "tokio",
+ "tracing",
+ "tracing-panic",
+ "twilight-http",
+ "twilight-mention",
+ "twilight-model",
+ "twilight-util",
+]
 
 [[package]]
 name = "sct"
