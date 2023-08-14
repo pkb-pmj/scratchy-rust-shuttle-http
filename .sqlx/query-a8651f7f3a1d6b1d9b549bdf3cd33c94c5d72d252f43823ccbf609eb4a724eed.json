@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT scratcher, followers, joined\n                FROM metadata\n                WHERE id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "scratcher",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "followers",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "joined",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a8651f7f3a1d6b1d9b549bdf3cd33c94c5d72d252f43823ccbf609eb4a724eed"
+}

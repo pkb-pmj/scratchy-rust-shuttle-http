@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO tokens (id, access_token, refresh_token, expires_at)\n                VALUES ($1, $2, $3, $4)\n                ON CONFLICT (id) DO UPDATE SET\n                    id = EXCLUDED.id,\n                    access_token = EXCLUDED.access_token,\n                    refresh_token = EXCLUDED.refresh_token,\n                    expires_at = EXCLUDED.expires_at\n                RETURNING access_token, refresh_token, expires_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "access_token",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "refresh_token",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e920d15d43478752be671d098b552a0e0e68a61918bfaba764824558bc98c994"
+}

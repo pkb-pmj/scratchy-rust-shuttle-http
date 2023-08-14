@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE metadata SET\n                    scratcher = $2,\n                    followers = $3,\n                    joined = $4,\n                    updated_at = 'now'\n                WHERE id = $1\n                RETURNING scratcher, followers, joined\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "scratcher",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "followers",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "joined",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Bool",
+        "Int8",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "93e217a3b90336efb00753f19cf309c250d4c1bcd168a6bdfa677b4df8465bff"
+}
