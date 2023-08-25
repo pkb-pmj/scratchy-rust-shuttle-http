@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-use super::Extend;
+use super::{timestamp, Extend};
 
 #[derive(Debug, Default)]
 pub struct User {
@@ -82,7 +82,7 @@ impl ToLocalized<EmbedBuilder> for User {
         if let Some(joined) = self.joined {
             embed = embed.field(EmbedFieldBuilder::new(
                 locale.user_joined(),
-                format!("<t:{}:R>", joined.unix_timestamp()),
+                timestamp(joined),
             ));
         }
 

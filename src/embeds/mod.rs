@@ -1,5 +1,10 @@
 mod user;
 
+use time::OffsetDateTime;
+use twilight_mention::{
+    timestamp::{Timestamp, TimestampStyle},
+    Mention,
+};
 pub use user::User;
 
 pub enum Color {
@@ -18,4 +23,13 @@ impl Into<u32> for Color {
 
 pub trait Extend<T> {
     fn extend(&mut self, data: T) -> &mut Self;
+}
+
+pub fn timestamp(datetime: OffsetDateTime) -> String {
+    Timestamp::new(
+        datetime.unix_timestamp().try_into().unwrap(),
+        Some(TimestampStyle::RelativeTime),
+    )
+    .mention()
+    .to_string()
 }
