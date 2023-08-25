@@ -12,6 +12,8 @@ use axum::{
 };
 use ed25519_dalek::Verifier;
 use hyper::body::to_bytes;
+use thiserror::Error;
+use tracing::{debug, error};
 use twilight_model::{
     application::interaction::{Interaction, InteractionType},
     http::interaction::{InteractionResponse, InteractionResponseType},
@@ -19,42 +21,66 @@ use twilight_model::{
 
 use crate::state::AppState;
 
-pub enum InteractionError {
-    InvalidRequest,
+use self::components::CustomIdError;
+
+#[derive(Debug, Error)]
+pub enum InteractionHandlerError {
+    #[error("invalid signature headers")]
+    InvalidSignatureHeaders,
+    #[error("invalid signature")]
     InvalidSignature,
-    NotImplemented,
+    #[error(transparent)]
+    Body(#[from] hyper::Error),
+    #[error(transparent)]
+    SerdeJson(#[from] serde_json::Error),
+    #[error(transparent)]
+    Interaction(#[from] InteractionError),
 }
 
-impl IntoResponse for InteractionError {
+impl IntoResponse for InteractionHandlerError {
     fn into_response(self) -> Response {
+        error!("{}", self);
+
         match self {
-            Self::InvalidRequest => StatusCode::BAD_REQUEST,
+            Self::InvalidSignatureHeaders => StatusCode::BAD_REQUEST,
             Self::InvalidSignature => StatusCode::UNAUTHORIZED,
-            Self::NotImplemented => StatusCode::NOT_IMPLEMENTED,
+            Self::Body(_) => StatusCode::BAD_REQUEST,
+            Self::SerdeJson(_) => StatusCode::BAD_REQUEST,
+            Self::Interaction(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
         .into_response()
     }
 }
 
+#[derive(Debug, Error)]
+pub enum InteractionError {
+    #[error("unsupported interaction type: {0:?}")]
+    UnsupportedType(InteractionType),
+    #[error("unknown command: {0}")]
+    UnknownCommand(String),
+    #[error(transparent)]
+    CustomId(#[from] CustomIdError),
+}
+
 pub async fn interaction_handler(
     State(state): State<AppState>,
     req: axum::http::Request<Body>,
-) -> Result<Json<InteractionResponse>, InteractionError> {
+) -> Result<Json<InteractionResponse>, InteractionHandlerError> {
     let headers = req.headers();
     let signature = headers
         .get("x-signature-ed25519")
         .and_then(|v| v.to_str().ok())
-        .ok_or(InteractionError::InvalidRequest)?
+        .ok_or(InteractionHandlerError::InvalidSignatureHeaders)?
         .parse()
-        .map_err(|_| InteractionError::InvalidRequest)?;
+        .map_err(|_| InteractionHandlerError::InvalidSignatureHeaders)?;
 
     let timestamp = req
         .headers()
         .get("x-signature-timestamp")
-        .ok_or(InteractionError::InvalidRequest)?
+        .ok_or(InteractionHandlerError::InvalidSignatureHeaders)?
         .to_owned();
 
-    let body_bytes = to_bytes(req).await.unwrap();
+    let body_bytes = to_bytes(req).await?;
 
     state
         .config
@@ -63,9 +89,9 @@ pub async fn interaction_handler(
             vec![timestamp.as_bytes(), &body_bytes].concat().as_ref(),
             &signature,
         )
-        .map_err(|_| InteractionError::InvalidSignature)?;
+        .map_err(|_| InteractionHandlerError::InvalidSignature)?;
 
-    let interaction = serde_json::from_slice::<Interaction>(&body_bytes).unwrap();
+    let interaction = serde_json::from_slice::<Interaction>(&body_bytes)?;
 
     let res = router(interaction, state).await?;
 
@@ -76,6 +102,7 @@ async fn router(
     interaction: Interaction,
     state: AppState,
 ) -> Result<InteractionResponse, InteractionError> {
+    debug!("{:?}", interaction);
     let locale = interaction.locale.clone().into();
 
     match interaction.kind {
@@ -89,6 +116,6 @@ async fn router(
         InteractionType::MessageComponent => {
             components::router(state, interaction.into(), locale).await
         }
-        _ => Err(InteractionError::NotImplemented),
+        kind => Err(InteractionError::UnsupportedType(kind)),
     }
 }

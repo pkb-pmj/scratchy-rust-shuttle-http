@@ -48,7 +48,8 @@ pub async fn run(
     let author_id = interaction.author_id().unwrap();
 
     if author_id != custom_id.id {
-        return Err(InteractionError::NotImplemented);
+        // TODO: respond with "not for you"
+        todo!();
     }
 
     let already_linked = state

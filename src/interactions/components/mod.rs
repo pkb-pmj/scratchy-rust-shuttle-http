@@ -6,6 +6,8 @@ use std::{fmt::Display, str::FromStr};
 use base64::{display::Base64Display, engine::general_purpose::STANDARD, Engine};
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
+use tracing::{debug_span, Instrument};
 use twilight_model::http::interaction::InteractionResponse;
 
 use crate::{locales::Locale, state::AppState};
@@ -17,20 +19,28 @@ pub async fn router(
     interaction: MessageComponentInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let custom_id: ComponentCustomId = interaction
-        .data()
-        .custom_id
-        .parse()
-        .expect("failed to parse custom_id from MessagePack");
+    let custom_id: ComponentCustomId = interaction.data().custom_id.parse()?;
 
-    match custom_id {
-        ComponentCustomId::Code(custom_id) => {
-            code::run(state, interaction, custom_id, locale).await
-        }
-        ComponentCustomId::Done(custom_id) => {
-            done::run(state, interaction, custom_id, locale).await
+    let span = debug_span!(
+        "component",
+        ?custom_id,
+        user = %interaction.author_id().unwrap(),
+        guild = ?interaction.guild_id.map(|v| v.get()),
+        channel = ?interaction.channel_id.map(|v| v.get()),
+    );
+
+    async move {
+        match custom_id {
+            ComponentCustomId::Code(custom_id) => {
+                code::run(state, interaction, custom_id, locale).await
+            }
+            ComponentCustomId::Done(custom_id) => {
+                done::run(state, interaction, custom_id, locale).await
+            }
         }
     }
+    .instrument(span)
+    .await
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -49,15 +59,21 @@ impl Display for ComponentCustomId {
     }
 }
 
+#[derive(Debug, Error)]
+pub enum CustomIdError {
+    #[error(transparent)]
+    Base64(#[from] base64::DecodeError),
+    #[error(transparent)]
+    MessagePack(#[from] rmp_serde::decode::Error),
+}
+
 impl FromStr for ComponentCustomId {
-    type Err = rmp_serde::decode::Error;
+    type Err = CustomIdError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let buf = STANDARD
-            .decode(s)
-            .expect("failed to decode custom_id from base64");
+        let buf = STANDARD.decode(s)?;
         let bytes = buf.as_slice();
-        Self::deserialize(&mut Deserializer::new(bytes))
+        Ok(Self::deserialize(&mut Deserializer::new(bytes))?)
     }
 }
 
