@@ -1,5 +1,7 @@
 mod user;
 
+pub use user::User;
+
 pub enum Color {
     Error,
     Success,

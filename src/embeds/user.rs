@@ -1,52 +1,73 @@
+use time::OffsetDateTime;
 use twilight_model::channel::message::embed::EmbedAuthor;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
 use crate::{
-    locales::{ExtendLocaleEmbed, Locale, ToLocalized},
-    scratch::{api, db},
+    locales::{Locale, ToLocalized},
+    scratch::{
+        api,
+        db::{
+            self,
+            user::{Statistics, Status},
+        },
+    },
 };
 
-impl ExtendLocaleEmbed for api::User {
-    fn extend_locale_embed(&self, locale: Locale, mut embed: EmbedBuilder) -> EmbedBuilder {
-        embed = embed
-            .author(EmbedAuthor {
-                name: self.username.to_string(),
-                url: Some(format!("https://scratch.mit.edu/users/{}", &self.username)),
-                icon_url: Some(self.profile.images.n50x50.to_string()),
-                proxy_icon_url: None,
-            })
-            .field(EmbedFieldBuilder::new(
-                locale.user_history_joined(),
-                format!("<t:{}:R>", self.history.joined.unix_timestamp()),
-            ));
+use super::Extend;
 
-        if let Some(country) = &self.profile.country {
-            embed = embed.field(EmbedFieldBuilder::new(
-                locale.user_country(),
-                country.to_string(),
-            ))
-        }
+#[derive(Debug, Default)]
+pub struct User {
+    username: Option<String>,
+    image: Option<String>,
+    joined: Option<OffsetDateTime>,
+    country: Option<String>,
+    about: Option<String>,
+    work: Option<String>,
+    status: Option<Status>,
+    school: Option<i64>,
+    statistics: Option<Statistics>,
+}
 
-        if !self.profile.bio.is_empty() {
-            embed = embed.field(EmbedFieldBuilder::new(
-                locale.user_profile_bio(),
-                self.profile.bio.to_string(),
-            ));
-        }
-
-        if !self.profile.status.is_empty() {
-            embed = embed.field(EmbedFieldBuilder::new(
-                locale.user_profile_work(),
-                self.profile.status.to_string(),
-            ));
-        }
-
-        embed
+impl User {
+    pub fn new() -> Self {
+        Default::default()
     }
 }
 
-impl ExtendLocaleEmbed for db::User {
-    fn extend_locale_embed(&self, locale: Locale, mut embed: EmbedBuilder) -> EmbedBuilder {
+impl Extend<api::User> for User {
+    fn extend(&mut self, data: api::User) -> &mut Self {
+        self.username = Some(data.username);
+        self.image = Some(data.profile.images.n50x50);
+        self.joined = Some(data.history.joined);
+        self.country = data.profile.country;
+        self.about = Some(data.profile.bio).filter(|s| !s.is_empty());
+        self.work = Some(data.profile.status).filter(|s| !s.is_empty());
+        self
+    }
+}
+
+impl Extend<db::User> for User {
+    fn extend(&mut self, data: db::User) -> &mut Self {
+        self.status = data.status;
+        self.school = data.school;
+        self.statistics = data.statistics;
+        self
+    }
+}
+
+impl ToLocalized<EmbedBuilder> for User {
+    fn to_localized(&self, locale: Locale) -> EmbedBuilder {
+        let mut embed = EmbedBuilder::new();
+
+        if let Some(username) = &self.username {
+            embed = embed.author(EmbedAuthor {
+                name: username.to_string(),
+                url: Some(format!("https://scratch.mit.edu/users/{}", &username)),
+                icon_url: self.image.as_ref().map(|value| value.to_string()),
+                proxy_icon_url: None,
+            });
+        }
+
         if let Some(status) = &self.status {
             let status = status.to_localized(locale);
             let description = if let Some(school) = self.school {
@@ -56,6 +77,34 @@ impl ExtendLocaleEmbed for db::User {
                 status
             };
             embed = embed.description(description);
+        }
+
+        if let Some(joined) = self.joined {
+            embed = embed.field(EmbedFieldBuilder::new(
+                locale.user_history_joined(),
+                format!("<t:{}:R>", joined.unix_timestamp()),
+            ));
+        }
+
+        if let Some(country) = &self.country {
+            embed = embed.field(EmbedFieldBuilder::new(
+                locale.user_country(),
+                country.to_string(),
+            ))
+        }
+
+        if let Some(about) = &self.about {
+            embed = embed.field(EmbedFieldBuilder::new(
+                locale.user_profile_bio(),
+                about.to_string(),
+            ));
+        }
+
+        if let Some(work) = &self.work {
+            embed = embed.field(EmbedFieldBuilder::new(
+                locale.user_profile_work(),
+                work.to_string(),
+            ));
         }
 
         if let Some(stats) = &self.statistics {

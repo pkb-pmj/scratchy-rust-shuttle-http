@@ -7,14 +7,13 @@ use twilight_model::{
 };
 use twilight_util::builder::{
     command::{CommandBuilder, StringBuilder},
-    embed::EmbedBuilder,
     InteractionResponseDataBuilder,
 };
 
 use crate::{
-    embeds::Color,
+    embeds::{Color, Extend, User},
     interactions::{context::ApplicationCommandInteraction, InteractionError},
-    locales::{ExtendLocaleEmbed, Locale},
+    locales::{Locale, ToLocalized},
     scratch::{api::ScratchAPIClient, db::ScratchDBClient, site::user_link, ScratchAPIError},
     state::AppState,
 };
@@ -59,16 +58,20 @@ pub async fn run(
     );
 
     let response = match api {
-        Ok(user) => {
-            let mut embed = EmbedBuilder::new().color(Color::Success.into());
+        Ok(api) => {
+            let mut user = User::new();
+            user.extend(api);
 
-            embed = user.extend_locale_embed(locale, embed);
-
-            if let Ok(user) = db {
-                embed = user.extend_locale_embed(locale, embed)
+            if let Ok(db) = db {
+                user.extend(db);
             }
 
-            let embed = embed.validate().expect("failed to validate embed").build();
+            let embed = user
+                .to_localized(locale)
+                .color(Color::Success.into())
+                .validate()
+                .expect("failed to validate embed")
+                .build();
 
             InteractionResponseDataBuilder::new().embeds([embed])
         }
