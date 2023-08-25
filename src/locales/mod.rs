@@ -33,3 +33,7 @@ pub trait ToLocaleEmbedField {
 pub trait ExtendLocaleEmbed {
     fn extend_locale_embed(&self, locale: Locale, embed: EmbedBuilder) -> EmbedBuilder;
 }
+
+pub trait ToLocalized<T> {
+    fn to_localized(&self, locale: Locale) -> T;
+}
