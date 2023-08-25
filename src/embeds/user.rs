@@ -2,7 +2,7 @@ use twilight_model::channel::message::embed::EmbedAuthor;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
 use crate::{
-    locales::{ExtendLocaleEmbed, Locale, ToLocaleEmbedField, ToLocaleString},
+    locales::{ExtendLocaleEmbed, Locale, ToLocalized},
     scratch::{api, db},
 };
 
@@ -48,7 +48,7 @@ impl ExtendLocaleEmbed for api::User {
 impl ExtendLocaleEmbed for db::User {
     fn extend_locale_embed(&self, locale: Locale, mut embed: EmbedBuilder) -> EmbedBuilder {
         if let Some(status) = &self.status {
-            let status = status.to_locale_string(locale);
+            let status = status.to_localized(locale);
             let description = if let Some(school) = self.school {
                 let school = format!("[{school}](https://scratch.mit.edu/classes/{school}/)");
                 locale.user_status_student(&school, &status)
@@ -60,17 +60,17 @@ impl ExtendLocaleEmbed for db::User {
 
         if let Some(stats) = &self.statistics {
             embed = embed
-                .field(stats.to_locale_embed_field(locale).inline())
-                .field(stats.ranks.to_locale_embed_field(locale).inline())
-                .field(stats.ranks.country.to_locale_embed_field(locale).inline());
+                .field(stats.to_localized(locale).inline())
+                .field(stats.ranks.to_localized(locale).inline())
+                .field(stats.ranks.country.to_localized(locale).inline());
         }
 
         embed
     }
 }
 
-impl ToLocaleString for db::user::Status {
-    fn to_locale_string(&self, locale: Locale) -> String {
+impl ToLocalized<String> for db::user::Status {
+    fn to_localized(&self, locale: Locale) -> String {
         match self {
             Self::Scratcher => locale.user_status_scratcher(),
             Self::NewScratcher => locale.user_status_new_scratcher(),
@@ -80,8 +80,8 @@ impl ToLocaleString for db::user::Status {
     }
 }
 
-impl ToLocaleString for db::user::Statistics {
-    fn to_locale_string(&self, locale: Locale) -> String {
+impl ToLocalized<EmbedFieldBuilder> for db::user::Statistics {
+    fn to_localized(&self, locale: Locale) -> EmbedFieldBuilder {
         let mut vec = Vec::with_capacity(6);
 
         if let Some(loves) = self.loves {
@@ -100,19 +100,15 @@ impl ToLocaleString for db::user::Statistics {
         vec.push(locale.user_stats_followers(&self.followers.to_string()));
         vec.push(locale.user_stats_following(&self.following.to_string()));
 
-        vec.join("\n")
+        let value = vec.join("\n");
+
+        EmbedFieldBuilder::new(locale.user_stats(), value)
     }
 }
 
-impl ToLocaleEmbedField for db::user::Statistics {
-    fn to_locale_embed_field(&self, locale: Locale) -> EmbedFieldBuilder {
-        EmbedFieldBuilder::new(locale.user_stats(), self.to_locale_string(locale))
-    }
-}
-
-impl ToLocaleString for db::user::Ranks {
-    fn to_locale_string(&self, locale: Locale) -> String {
-        vec![
+impl ToLocalized<EmbedFieldBuilder> for db::user::Ranks {
+    fn to_localized(&self, locale: Locale) -> EmbedFieldBuilder {
+        let value = vec![
             locale.user_stats_loves(&self.loves.to_string()),
             locale.user_stats_favorites(&self.favorites.to_string()),
             locale.user_stats_comments(&self.comments.to_string()),
@@ -120,19 +116,15 @@ impl ToLocaleString for db::user::Ranks {
             locale.user_stats_followers(&self.followers.to_string()),
             locale.user_stats_following(&self.following.to_string()),
         ]
-        .join("\n")
+        .join("\n");
+
+        EmbedFieldBuilder::new(locale.user_stats_ranks(), value)
     }
 }
 
-impl ToLocaleEmbedField for db::user::Ranks {
-    fn to_locale_embed_field(&self, locale: Locale) -> EmbedFieldBuilder {
-        EmbedFieldBuilder::new(locale.user_stats_ranks(), self.to_locale_string(locale))
-    }
-}
-
-impl ToLocaleString for db::user::Country {
-    fn to_locale_string(&self, locale: Locale) -> String {
-        vec![
+impl ToLocalized<EmbedFieldBuilder> for db::user::Country {
+    fn to_localized(&self, locale: Locale) -> EmbedFieldBuilder {
+        let value = vec![
             locale.user_stats_loves(&self.loves.to_string()),
             locale.user_stats_favorites(&self.favorites.to_string()),
             locale.user_stats_comments(&self.comments.to_string()),
@@ -140,15 +132,8 @@ impl ToLocaleString for db::user::Country {
             locale.user_stats_followers(&self.followers.to_string()),
             locale.user_stats_following(&self.following.to_string()),
         ]
-        .join("\n")
-    }
-}
+        .join("\n");
 
-impl ToLocaleEmbedField for db::user::Country {
-    fn to_locale_embed_field(&self, locale: Locale) -> EmbedFieldBuilder {
-        EmbedFieldBuilder::new(
-            locale.user_stats_ranks_country(),
-            self.to_locale_string(locale),
-        )
+        EmbedFieldBuilder::new(locale.user_stats_ranks_country(), value)
     }
 }
