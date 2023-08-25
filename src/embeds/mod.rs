@@ -13,3 +13,7 @@ impl Into<u32> for Color {
         }
     }
 }
+
+pub trait Extend<T> {
+    fn extend(&mut self, data: T) -> &mut Self;
+}
