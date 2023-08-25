@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use time::OffsetDateTime;
 
 use super::user;
 
@@ -54,9 +55,12 @@ pub struct Images {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct History {
-    pub created: String,
-    pub modified: String,
-    pub shared: String,
+    #[serde(with = "time::serde::iso8601")]
+    pub created: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub modified: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub shared: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Deserialize)]

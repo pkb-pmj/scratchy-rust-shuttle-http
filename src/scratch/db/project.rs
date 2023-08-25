@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::Deserialize;
+use time::OffsetDateTime;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Project {
@@ -20,11 +21,16 @@ pub struct Project {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Times {
-    pub created: String,
-    pub modified: String,
-    pub shared: String,
-    pub last_check: String,
-    pub last_metadata_check: String,
+    #[serde(with = "time::serde::iso8601")]
+    pub created: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub modified: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub shared: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub last_check: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub last_metadata_check: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Deserialize)]
