@@ -62,6 +62,8 @@ pub enum InteractionError {
     CustomId(#[from] CustomIdError),
     #[error(transparent)]
     ScratchAPI(#[from] ScratchAPIError),
+    #[error(transparent)]
+    Database(#[from] sqlx::Error),
 }
 
 pub async fn interaction_handler(

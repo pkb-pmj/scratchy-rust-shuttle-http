@@ -55,8 +55,7 @@ pub async fn run(
     let already_linked = state
         .pool
         .get_scratch_account(custom_id.username.to_string())
-        .await
-        .unwrap();
+        .await?;
 
     if let Some(account) = already_linked {
         let content = if account.id == author_id {

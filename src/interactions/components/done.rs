@@ -90,10 +90,7 @@ pub async fn run(
         });
     };
 
-    if let Err(err) = link_account(&state.pool, custom_id.username.to_owned(), author_id)
-        .await
-        .unwrap()
-    {
+    if let Err(err) = link_account(&state.pool, custom_id.username.to_owned(), author_id).await? {
         let message = match err {
             LinkError::AlreadyLinkedToYou => {
                 locale.already_linked_to_you(&user_link(&custom_id.username))
@@ -115,7 +112,7 @@ pub async fn run(
         });
     }
 
-    if state.pool.get_token(author_id).await.unwrap().is_some() {
+    if state.pool.get_token(author_id).await?.is_some() {
         state.update_role_connection(author_id).await.unwrap();
     }
 

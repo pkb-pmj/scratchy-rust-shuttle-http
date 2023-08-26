@@ -83,11 +83,8 @@ pub async fn run(
                 });
             }
 
-            if let Some(scratch_account) = state
-                .pool
-                .get_scratch_account(username.to_string())
-                .await
-                .unwrap()
+            if let Some(scratch_account) =
+                state.pool.get_scratch_account(username.to_string()).await?
             {
                 scratch_account.id
             } else {
@@ -115,7 +112,7 @@ pub async fn run(
 
     let mention = id.mention().to_string();
 
-    let linked_accounts = state.pool.get_linked_scratch_accounts(id).await.unwrap();
+    let linked_accounts = state.pool.get_linked_scratch_accounts(id).await?;
 
     if linked_accounts.len() == 0 {
         return Ok(InteractionResponse {

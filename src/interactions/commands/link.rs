@@ -79,7 +79,7 @@ pub async fn run(
         state.reqwest_client.get_scratch_api_user(&username),
     );
 
-    if let Some(account) = db.unwrap() {
+    if let Some(account) = db? {
         username = &account.username;
 
         let content = if account.id == author_id {
