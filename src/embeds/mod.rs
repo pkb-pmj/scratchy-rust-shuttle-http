@@ -1,3 +1,4 @@
+mod project;
 mod user;
 
 use time::OffsetDateTime;
@@ -5,6 +6,8 @@ use twilight_mention::{
     timestamp::{Timestamp, TimestampStyle},
     Mention,
 };
+
+pub use project::Project;
 pub use user::User;
 
 pub enum Color {
