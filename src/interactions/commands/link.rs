@@ -103,20 +103,14 @@ pub async fn run(
     match scratch_api {
         Some(ref user) => username = &user.username,
         None => {
-            let content = format!(
-                "## {}\n{}",
-                locale.error_not_found(),
-                locale.error_not_found_user(&user_link(username))
-            );
-
             return Ok(InteractionResponse {
                 kind: InteractionResponseType::ChannelMessageWithSource,
                 data: Some(
                     InteractionResponseDataBuilder::new()
-                        .content(content)
+                        .content(locale.user_not_found(&user_link(username)))
                         .build(),
                 ),
-            });
+            })
         }
     }
 

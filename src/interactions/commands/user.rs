@@ -75,11 +75,8 @@ pub async fn run(
 
             InteractionResponseDataBuilder::new().embeds([embed])
         }
-        None => InteractionResponseDataBuilder::new().content(format!(
-            "{}\n{}",
-            locale.error_not_found(),
-            locale.error_not_found_user(&user_link(username)),
-        )),
+        None => InteractionResponseDataBuilder::new()
+            .content(locale.user_not_found(&user_link(username))),
     };
 
     Ok(InteractionResponse {
