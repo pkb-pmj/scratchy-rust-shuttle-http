@@ -4,7 +4,7 @@ use twilight_model::{
 };
 use twilight_util::builder::command::CommandBuilder;
 
-use crate::interactions::InteractionError;
+use crate::{interactions::InteractionError, locales::Locale, state::AppState};
 
 pub fn register() -> Command {
     CommandBuilder::new("ping", "Current bot status", CommandType::ChatInput)
@@ -14,11 +14,11 @@ pub fn register() -> Command {
         .build()
 }
 
-pub async fn run() -> Result<InteractionResponse, InteractionError> {
+pub async fn run(state: AppState, locale: Locale) -> Result<InteractionResponse, InteractionError> {
     Ok(InteractionResponse {
         kind: InteractionResponseType::ChannelMessageWithSource,
         data: Some(InteractionResponseData {
-            content: Some("Pong!".into()),
+            content: Some(locale.ping_last_restart(&state.start_time.timestamp())),
             ..Default::default()
         }),
     })

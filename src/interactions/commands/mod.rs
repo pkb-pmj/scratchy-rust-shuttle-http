@@ -30,7 +30,7 @@ pub async fn router(
             "about" => about::run().await,
             "find" => find::run(state, interaction, locale).await,
             "link" => link::run(state, interaction, locale).await,
-            "ping" => ping::run().await,
+            "ping" => ping::run(state, locale).await,
             "project" => project::run(state, interaction, locale).await,
             "user" => user::run(state, interaction, locale).await,
             command => Err(InteractionError::UnknownCommand(command.to_string())),

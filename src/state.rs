@@ -4,8 +4,9 @@ use oauth2::basic::BasicClient;
 use reqwest::{Client, Url};
 use shuttle_secrets::SecretStore;
 use sqlx::PgPool;
+use time::OffsetDateTime;
 
-use crate::linked_roles::create_oauth_client;
+use crate::{embeds::timestamp, linked_roles::create_oauth_client};
 
 #[derive(Debug, Clone)]
 pub struct AppState {
@@ -13,6 +14,7 @@ pub struct AppState {
     pub oauth_client: BasicClient,
     pub reqwest_client: Client,
     pub pool: PgPool,
+    pub start_time: StartTime,
 }
 
 impl AppState {
@@ -23,11 +25,14 @@ impl AppState {
 
         let reqwest_client = Client::new();
 
+        let start_time = StartTime::new();
+
         Self {
             config,
             oauth_client,
             reqwest_client,
             pool,
+            start_time,
         }
     }
 }
@@ -99,5 +104,24 @@ impl FromRef<AppState> for Client {
 impl FromRef<AppState> for PgPool {
     fn from_ref(input: &AppState) -> Self {
         input.pool.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StartTime(OffsetDateTime);
+
+impl StartTime {
+    fn new() -> Self {
+        Self(OffsetDateTime::now_utc())
+    }
+
+    pub fn timestamp(&self) -> String {
+        timestamp(self.0)
+    }
+}
+
+impl FromRef<AppState> for StartTime {
+    fn from_ref(input: &AppState) -> Self {
+        input.start_time.clone()
     }
 }

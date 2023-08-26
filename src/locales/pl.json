@@ -1,4 +1,5 @@
 {
+	"ping_last_restart": "Pong!\nOstatni restart: {timestamp}",
 	"status_scratcher": "Scratcher",
 	"status_new_scratcher": "Nowy Scratcher",
 	"status_student": "{status}, uczeń w szkole {school}",
