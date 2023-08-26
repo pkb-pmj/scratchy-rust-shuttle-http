@@ -9,6 +9,7 @@ pub mod about;
 pub mod find;
 pub mod link;
 pub mod ping;
+pub mod project;
 pub mod user;
 
 pub async fn router(
@@ -30,6 +31,7 @@ pub async fn router(
             "find" => find::run(state, interaction, locale).await,
             "link" => link::run(state, interaction, locale).await,
             "ping" => ping::run().await,
+            "project" => project::run(state, interaction, locale).await,
             "user" => user::run(state, interaction, locale).await,
             command => Err(InteractionError::UnknownCommand(command.to_string())),
         }

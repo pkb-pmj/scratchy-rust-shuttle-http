@@ -29,6 +29,7 @@
 	"error.internal": "Błąd wewnętrzny",
 	"error.internal.description": "Coś poszło nie tak wewnątrz bota. Postaramy się jak najszybciej to naprawić. Jeżeli wiesz jak doprowadzić do tego błędu lub masz jakieś inne przydatne informacje, zgłoś to na serwerze wsparcia.",
 	"project_not_found": "Projekt {project} nie istnieje.",
+	"invalid_project_id": "Nieprawidłowe ID projektu.",
 	"user_not_found": "Użytkownik {user} nie istnieje.",
 	"invalid_username": "Nieprawidłowa nazwa użytkownika.",
 	"already_linked_to_you": "Konto {user} jest już połączone z Twoim kontem Discord.",
