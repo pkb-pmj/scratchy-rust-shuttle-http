@@ -47,6 +47,8 @@ pub enum RoleConnectionUpdateError {
     ScratchAPIError(#[from] ScratchAPIError),
     #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
+    #[error("no accounts found in ScratchDB for user {0}")]
+    NoAccountsFound(Id<UserMarker>),
 }
 
 #[async_trait]
@@ -64,16 +66,19 @@ impl RoleConnectionUpdater for AppState {
         let linked_accounts = tx.get_linked_scratch_accounts(id).await?;
 
         let accounts = fetch_scratch_data(linked_accounts, &self.reqwest_client).await?;
+        if accounts.len() == 0 {
+            return Err(RoleConnectionUpdateError::NoAccountsFound(id));
+        }
 
         let role_connection = find_metadata_values(accounts);
 
         let old_data = tx.get_metadata(id).await?;
-        
+
         // Write even if unchanged to update `updated_at`
         tx.write_metadata(id, &role_connection.metadata).await?;
-        
+
         tx.commit().await?;
-        
+
         // Only update if the metadata has changed or was `None`
         if old_data.as_ref() != Some(&role_connection.metadata) {
             self.reqwest_client
@@ -103,7 +108,10 @@ async fn fetch_scratch_data(
     }
 
     while let Some(result) = set.join_next().await {
-        db_accounts.push(result.unwrap()?);
+        // Skip accounts which aren't in ScratchDB
+        if let Some(user) = result.unwrap()? {
+            db_accounts.push(user);
+        }
     }
 
     Ok(db_accounts)

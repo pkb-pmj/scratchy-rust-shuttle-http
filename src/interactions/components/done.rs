@@ -67,7 +67,8 @@ pub async fn run(
     let comments = state
         .reqwest_client
         .get_scratch_api_studio_comments(STUDIO_ID)
-        .await
+        .await?
+        // Assume the studio hasn't been deleted
         .unwrap();
 
     if let Err(err) = validate_comment(comments, custom_id.to_owned()) {

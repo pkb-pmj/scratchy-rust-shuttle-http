@@ -14,7 +14,7 @@ use crate::{
     embeds::{Color, Extend, User},
     interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::{Locale, ToLocalized},
-    scratch::{api::ScratchAPIClient, db::ScratchDBClient, site::user_link, ScratchAPIError},
+    scratch::{api::ScratchAPIClient, db::ScratchDBClient, site::user_link},
     state::AppState,
 };
 
@@ -57,12 +57,12 @@ pub async fn run(
         state.reqwest_client.get_scratch_db_user(username),
     );
 
-    let response = match api {
-        Ok(api) => {
+    let response = match api? {
+        Some(api) => {
             let mut user = User::new();
             user.extend(api);
 
-            if let Ok(db) = db {
+            if let Ok(Some(db)) = db {
                 user.extend(db);
             }
 
@@ -75,23 +75,11 @@ pub async fn run(
 
             InteractionResponseDataBuilder::new().embeds([embed])
         }
-        Err(error) => {
-            let (title, description) = match error {
-                ScratchAPIError::NotFound => (
-                    locale.error_not_found(),
-                    locale.error_not_found_user(&user_link(username)),
-                ),
-                ScratchAPIError::ServerError => (
-                    locale.error_scratch_api(),
-                    locale.error_scratch_api_description(),
-                ),
-                ScratchAPIError::Other(_) => {
-                    (locale.error_internal(), locale.error_internal_description())
-                }
-            };
-
-            InteractionResponseDataBuilder::new().content(format!("{}\n{}", title, description))
-        }
+        None => InteractionResponseDataBuilder::new().content(format!(
+            "{}\n{}",
+            locale.error_not_found(),
+            locale.error_not_found_user(&user_link(username)),
+        )),
     };
 
     Ok(InteractionResponse {

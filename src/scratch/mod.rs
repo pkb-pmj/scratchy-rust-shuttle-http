@@ -18,6 +18,11 @@ trait GetUrl {
         &self,
         url: impl IntoUrl + Send,
     ) -> Result<T, Self::Error>;
+
+    async fn get_url_optional<T: for<'de> Deserialize<'de>>(
+        &self,
+        url: impl IntoUrl + Send,
+    ) -> Result<Option<T>, Self::Error>;
 }
 
 #[async_trait]
@@ -36,12 +41,21 @@ impl GetUrl for Client {
             .json()
             .await?)
     }
+
+    async fn get_url_optional<T: for<'de> Deserialize<'de>>(
+        &self,
+        url: impl IntoUrl + Send,
+    ) -> Result<Option<T>, Self::Error> {
+        Ok(match self.get(url).send().await?.error_for_status() {
+            Ok(res) => Some(res.json().await?),
+            Err(err) if err.status() == Some(StatusCode::NOT_FOUND) => None,
+            Err(err) => Err(err)?,
+        })
+    }
 }
 
 #[derive(Debug, Error)]
 pub enum ScratchAPIError {
-    #[error("Not found")]
-    NotFound,
     #[error("Server error")]
     ServerError,
     #[error("Other")]
@@ -51,7 +65,6 @@ pub enum ScratchAPIError {
 impl From<Error> for ScratchAPIError {
     fn from(value: Error) -> Self {
         match value.status() {
-            Some(StatusCode::NOT_FOUND) => ScratchAPIError::NotFound,
             Some(status) => {
                 if status.is_server_error() {
                     ScratchAPIError::ServerError

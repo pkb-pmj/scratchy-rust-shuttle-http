@@ -19,7 +19,7 @@ use twilight_model::{
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
 
-use crate::state::AppState;
+use crate::{scratch::ScratchAPIError, state::AppState};
 
 use self::components::CustomIdError;
 
@@ -60,6 +60,8 @@ pub enum InteractionError {
     UnknownCommand(String),
     #[error(transparent)]
     CustomId(#[from] CustomIdError),
+    #[error(transparent)]
+    ScratchAPI(#[from] ScratchAPIError),
 }
 
 pub async fn interaction_handler(

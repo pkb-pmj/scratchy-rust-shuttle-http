@@ -26,7 +26,7 @@ use crate::{
     scratch::{
         api::ScratchAPIClient,
         site::{user_link, username_is_valid},
-        ScratchAPIError, STUDIO_URL,
+        STUDIO_URL,
     },
     state::AppState,
 };
@@ -99,24 +99,15 @@ pub async fn run(
         });
     }
 
+    let scratch_api = scratch_api?;
     match scratch_api {
-        Ok(ref user) => username = &user.username,
-        Err(error) => {
-            let (title, description) = match error {
-                ScratchAPIError::NotFound => (
-                    locale.error_not_found(),
-                    locale.error_not_found_user(&user_link(username)),
-                ),
-                ScratchAPIError::ServerError => (
-                    locale.error_scratch_api(),
-                    locale.error_scratch_api_description(),
-                ),
-                ScratchAPIError::Other(_) => {
-                    (locale.error_internal(), locale.error_internal_description())
-                }
-            };
-
-            let content = format!("## {title}\n{description}");
+        Some(ref user) => username = &user.username,
+        None => {
+            let content = format!(
+                "## {}\n{}",
+                locale.error_not_found(),
+                locale.error_not_found_user(&user_link(username))
+            );
 
             return Ok(InteractionResponse {
                 kind: InteractionResponseType::ChannelMessageWithSource,

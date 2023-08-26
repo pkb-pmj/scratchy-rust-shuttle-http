@@ -13,24 +13,24 @@ use super::{GetUrl, ScratchAPIError};
 pub trait ScratchDBClient {
     type Error;
 
-    async fn get_scratch_db_user(&self, username: &str) -> Result<User, Self::Error>;
+    async fn get_scratch_db_user(&self, username: &str) -> Result<Option<User>, Self::Error>;
 
-    async fn get_scratch_db_project(&self, id: i64) -> Result<Project, Self::Error>;
+    async fn get_scratch_db_project(&self, id: i64) -> Result<Option<Project>, Self::Error>;
 }
 
 #[async_trait]
 impl ScratchDBClient for Client {
     type Error = ScratchAPIError;
 
-    async fn get_scratch_db_user(&self, username: &str) -> Result<User, Self::Error> {
-        self.get_url(format!(
+    async fn get_scratch_db_user(&self, username: &str) -> Result<Option<User>, Self::Error> {
+        self.get_url_optional(format!(
             "https://scratchdb.lefty.one/v3/user/info/{username}"
         ))
         .await
     }
 
-    async fn get_scratch_db_project(&self, id: i64) -> Result<Project, Self::Error> {
-        self.get_url(format!("https://scratchdb.lefty.one/v3/project/info/{id}"))
+    async fn get_scratch_db_project(&self, id: i64) -> Result<Option<Project>, Self::Error> {
+        self.get_url_optional(format!("https://scratchdb.lefty.one/v3/project/info/{id}"))
             .await
     }
 }
