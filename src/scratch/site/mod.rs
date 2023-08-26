@@ -1,3 +1,7 @@
+pub fn project_link(id: i64) -> String {
+    format!("[{id}](https://scratch.mit.edu/projects/{id})")
+}
+
 pub fn user_link(username: &str) -> String {
     format!("[{username}](https://scratch.mit.edu/users/{username})")
 }
