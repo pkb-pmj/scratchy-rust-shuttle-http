@@ -17,7 +17,7 @@ use crate::{
     database::Database,
     interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::Locale,
-    scratch::site::{user_link, username_is_valid},
+    scratch::site::{extract_username, user_link},
     state::AppState,
 };
 
@@ -72,7 +72,7 @@ pub async fn run(
                 _ => panic!("expected option 'username' to be of type String"),
             };
 
-            if !username_is_valid(username) {
+            let Some(username) = extract_username(username) else {
                 return Ok(InteractionResponse {
                     kind: InteractionResponseType::ChannelMessageWithSource,
                     data: Some(
@@ -81,7 +81,7 @@ pub async fn run(
                             .build(),
                     ),
                 });
-            }
+            };
 
             if let Some(scratch_account) =
                 state.pool.get_scratch_account(username.to_string()).await?
@@ -92,7 +92,7 @@ pub async fn run(
                     kind: InteractionResponseType::ChannelMessageWithSource,
                     data: Some(
                         InteractionResponseDataBuilder::new()
-                            .content(locale.no_linked_discord_account(&user_link(username)))
+                            .content(locale.no_linked_discord_account(&user_link(&username)))
                             .build(),
                     ),
                 });

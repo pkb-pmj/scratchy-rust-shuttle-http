@@ -14,7 +14,11 @@ use crate::{
     embeds::{Color, Extend, User},
     interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::{Locale, ToLocalized},
-    scratch::{api::ScratchAPIClient, db::ScratchDBClient, site::user_link},
+    scratch::{
+        api::ScratchAPIClient,
+        db::ScratchDBClient,
+        site::{extract_username, user_link},
+    },
     state::AppState,
 };
 
@@ -52,9 +56,20 @@ pub async fn run(
         _ => unreachable!("expected option 'username' to be of type String"),
     };
 
+    let Some(username) = extract_username(username) else {
+        return Ok(InteractionResponse {
+            kind: InteractionResponseType::ChannelMessageWithSource,
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(locale.invalid_username())
+                    .build(),
+            ),
+        });
+    };
+
     let (api, db) = tokio::join!(
-        state.reqwest_client.get_scratch_api_user(username),
-        state.reqwest_client.get_scratch_db_user(username),
+        state.reqwest_client.get_scratch_api_user(&username),
+        state.reqwest_client.get_scratch_db_user(&username),
     );
 
     let response = match api? {
@@ -76,7 +91,7 @@ pub async fn run(
             InteractionResponseDataBuilder::new().embeds([embed])
         }
         None => InteractionResponseDataBuilder::new()
-            .content(locale.user_not_found(&user_link(username))),
+            .content(locale.user_not_found(&user_link(&username))),
     };
 
     Ok(InteractionResponse {

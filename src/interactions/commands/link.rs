@@ -25,7 +25,7 @@ use crate::{
     locales::Locale,
     scratch::{
         api::ScratchAPIClient,
-        site::{user_link, username_is_valid},
+        site::{extract_username, user_link},
         STUDIO_URL,
     },
     state::AppState,
@@ -49,7 +49,7 @@ pub async fn run(
     interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let mut username = match &interaction
+    let username = match &interaction
         .data()
         .options
         .iter()
@@ -61,7 +61,7 @@ pub async fn run(
         _ => unreachable!("expected option 'username' to be of type String"),
     };
 
-    if !username_is_valid(username) {
+    let Some(mut username) = extract_username(username) else {
         return Ok(InteractionResponse {
             kind: InteractionResponseType::ChannelMessageWithSource,
             data: Some(
@@ -70,7 +70,7 @@ pub async fn run(
                     .build(),
             ),
         });
-    }
+    };
 
     let author_id = interaction.author_id().unwrap();
 
@@ -80,12 +80,12 @@ pub async fn run(
     );
 
     if let Some(account) = db? {
-        username = &account.username;
+        username = account.username;
 
         let content = if account.id == author_id {
-            locale.already_linked_to_you(&user_link(username))
+            locale.already_linked_to_you(&user_link(&username))
         } else {
-            locale.already_linked_to_other(&account.id.mention().to_string(), &user_link(username))
+            locale.already_linked_to_other(&account.id.mention().to_string(), &user_link(&username))
         };
 
         return Ok(InteractionResponse {
@@ -101,13 +101,13 @@ pub async fn run(
 
     let scratch_api = scratch_api?;
     match scratch_api {
-        Some(ref user) => username = &user.username,
+        Some(user) => username = user.username,
         None => {
             return Ok(InteractionResponse {
                 kind: InteractionResponseType::ChannelMessageWithSource,
                 data: Some(
                     InteractionResponseDataBuilder::new()
-                        .content(locale.user_not_found(&user_link(username)))
+                        .content(locale.user_not_found(&user_link(&username)))
                         .build(),
                 ),
             })
@@ -128,7 +128,7 @@ pub async fn run(
             InteractionResponseDataBuilder::new()
                 .content(
                     locale
-                        .link_your_account(&author_id.mention().to_string(), &user_link(username)),
+                        .link_your_account(&author_id.mention().to_string(), &user_link(&username)),
                 )
                 .components([Component::ActionRow(ActionRow {
                     components: vec![

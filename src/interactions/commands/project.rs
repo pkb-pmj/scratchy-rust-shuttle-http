@@ -14,7 +14,11 @@ use crate::{
     embeds::{Color, Extend, Project},
     interactions::{context::ApplicationCommandInteraction, InteractionError},
     locales::{Locale, ToLocalized},
-    scratch::{api::ScratchAPIClient, db::ScratchDBClient, site::project_link},
+    scratch::{
+        api::ScratchAPIClient,
+        db::ScratchDBClient,
+        site::{extract_project_id, project_link},
+    },
     state::AppState,
 };
 
@@ -52,10 +56,14 @@ pub async fn run(
         _ => unreachable!("expected option 'id' to be of type String"),
     };
 
-    let Ok(id) = id.parse() else {
+    let Some(id) = extract_project_id(id) else {
         return Ok(InteractionResponse {
             kind: InteractionResponseType::ChannelMessageWithSource,
-            data: Some(InteractionResponseDataBuilder::new().content(locale.invalid_project_id()).build()),
+            data: Some(
+                InteractionResponseDataBuilder::new()
+                    .content(locale.invalid_project_id())
+                    .build(),
+            ),
         });
     };
 
