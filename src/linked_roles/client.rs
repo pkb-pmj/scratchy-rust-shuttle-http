@@ -21,6 +21,11 @@ pub fn create_oauth_client(config: &Config) -> BasicClient {
         .set_redirect_uri(redirect_url)
 }
 
+pub type OAuthError = oauth2::RequestTokenError<
+    oauth2::reqwest::Error<reqwest::Error>,
+    oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
+>;
+
 #[async_trait]
 pub trait RoleConnectionClient {
     type Error;

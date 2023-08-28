@@ -13,7 +13,7 @@ use crate::{
 };
 
 use super::{
-    client::RoleConnectionClient,
+    client::{OAuthError, RoleConnectionClient},
     metadata::RoleConnectionData,
     model::RoleConnection,
     token_client::{TokenClient, TokenError},
@@ -36,13 +36,7 @@ pub enum RoleConnectionUpdateError {
     #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
     #[error(transparent)]
-    OAuthError(
-        #[from]
-        oauth2::RequestTokenError<
-            oauth2::reqwest::Error<reqwest::Error>,
-            oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
-        >,
-    ),
+    OAuthError(#[from] OAuthError),
     #[error(transparent)]
     ScratchAPIError(#[from] ScratchAPIError),
     #[error(transparent)]

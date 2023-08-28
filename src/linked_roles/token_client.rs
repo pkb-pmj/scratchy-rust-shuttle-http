@@ -6,6 +6,7 @@ use twilight_model::id::{marker::UserMarker, Id};
 
 use crate::{database::Database, state::AppState};
 
+use super::client::OAuthError;
 use super::{OAuthToken, Token};
 
 #[async_trait]
@@ -22,13 +23,7 @@ pub enum TokenError {
     #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
     #[error(transparent)]
-    OAuthError(
-        #[from]
-        oauth2::RequestTokenError<
-            oauth2::reqwest::Error<reqwest::Error>,
-            oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
-        >,
-    ),
+    OAuthError(#[from] OAuthError),
 }
 
 #[async_trait]
