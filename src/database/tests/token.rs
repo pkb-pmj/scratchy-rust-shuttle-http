@@ -76,3 +76,27 @@ async fn overwrite_existing_token(pool: PgPool) {
 
     assert_eq!(actual, expected);
 }
+
+#[sqlx::test(fixtures("linked_accounts", "tokens"))]
+async fn delete_existing_token(pool: PgPool) {
+    let id = "755497867606622450".parse().unwrap();
+
+    let expected = Token {
+        access_token: "access_token".into(),
+        refresh_token: "refresh_token".into(),
+        expires_at: datetime!(2023-07-10 12:00:00 UTC),
+    };
+
+    let actual = pool.delete_token(id).await.unwrap();
+    assert_eq!(actual, expected);
+
+    let actual = pool.get_token(id).await.unwrap();
+    assert_eq!(actual, None);
+}
+
+#[sqlx::test(fixtures("linked_accounts"))]
+async fn delete_nonexistent_token(pool: PgPool) {
+    let id = "755497867606622450".parse().unwrap();
+
+    pool.delete_token(id).await.unwrap_err();
+}

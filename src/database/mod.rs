@@ -53,6 +53,8 @@ pub trait Database {
 
     async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error>;
 
+    async fn delete_token(self, id: Id<UserMarker>) -> Result<Token, Self::Error>;
+
     async fn get_oldest_metadata(
         self,
     ) -> Result<Option<(Id<UserMarker>, OffsetDateTime)>, Self::Error>;
@@ -212,6 +214,20 @@ where
         )
         .fetch_one(self)
         .await?)
+    }
+
+    async fn delete_token(self, id: Id<UserMarker>) -> Result<Token, Self::Error> {
+        sqlx::query_as!(
+            Token,
+            r#"
+                DELETE FROM tokens
+                WHERE id = $1
+                RETURNING access_token, refresh_token, expires_at
+            "#,
+            id.to_string(),
+        )
+        .fetch_one(self)
+        .await
     }
 
     async fn get_oldest_metadata(
