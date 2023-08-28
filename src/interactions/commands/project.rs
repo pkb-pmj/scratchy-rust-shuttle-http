@@ -1,8 +1,5 @@
 use twilight_model::{
-    application::{
-        command::{Command, CommandType},
-        interaction::application_command::CommandOptionValue,
-    },
+    application::command::{Command, CommandType},
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
 use twilight_util::builder::{
@@ -12,7 +9,10 @@ use twilight_util::builder::{
 
 use crate::{
     embeds::{Color, Extend, Project},
-    interactions::{context::ApplicationCommandInteraction, InteractionError},
+    interactions::{
+        context::{ApplicationCommandInteraction, GetOption},
+        InteractionError,
+    },
     locales::{Locale, ToLocalized},
     scratch::{
         api::ScratchAPIClient,
@@ -44,17 +44,7 @@ pub async fn run(
     interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let id = match &interaction
-        .data()
-        .options
-        .iter()
-        .find(|option| option.name == "id")
-        .expect("option 'id' not found")
-        .value
-    {
-        CommandOptionValue::String(value) => value,
-        _ => unreachable!("expected option 'id' to be of type String"),
-    };
+    let id: &String = interaction.data().options.get_option("id")?;
 
     let Some(id) = extract_project_id(id) else {
         return Ok(InteractionResponse {

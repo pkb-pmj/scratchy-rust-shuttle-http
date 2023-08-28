@@ -1,8 +1,5 @@
 use twilight_model::{
-    application::{
-        command::{Command, CommandType},
-        interaction::application_command::CommandOptionValue,
-    },
+    application::command::{Command, CommandType},
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
 use twilight_util::builder::{
@@ -12,7 +9,10 @@ use twilight_util::builder::{
 
 use crate::{
     embeds::{Color, Extend, User},
-    interactions::{context::ApplicationCommandInteraction, InteractionError},
+    interactions::{
+        context::{ApplicationCommandInteraction, GetOption},
+        InteractionError,
+    },
     locales::{Locale, ToLocalized},
     scratch::{
         api::ScratchAPIClient,
@@ -44,17 +44,7 @@ pub async fn run(
     interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let username = match &interaction
-        .data()
-        .options
-        .iter()
-        .find(|option| option.name == "username")
-        .expect("option 'username' not found")
-        .value
-    {
-        CommandOptionValue::String(value) => value,
-        _ => unreachable!("expected option 'username' to be of type String"),
-    };
+    let username: &String = interaction.data().options.get_option("username")?;
 
     let Some(username) = extract_username(username) else {
         return Ok(InteractionResponse {

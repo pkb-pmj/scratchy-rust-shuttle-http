@@ -2,10 +2,7 @@ use std::fmt::Write;
 
 use twilight_mention::Mention;
 use twilight_model::{
-    application::{
-        command::{Command, CommandType},
-        interaction::application_command::CommandOptionValue,
-    },
+    application::command::{Command, CommandType},
     http::interaction::{InteractionResponse, InteractionResponseType},
 };
 use twilight_util::builder::{
@@ -15,7 +12,10 @@ use twilight_util::builder::{
 
 use crate::{
     database::Database,
-    interactions::{context::ApplicationCommandInteraction, InteractionError},
+    interactions::{
+        context::{ApplicationCommandInteraction, GetOption, GetSubcommand},
+        InteractionError,
+    },
     locales::Locale,
     scratch::site::{extract_username, user_link},
     state::AppState,
@@ -51,26 +51,11 @@ pub async fn run(
     interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let data = interaction.data();
-    if data.options.len() != 1 {
-        panic!("expected exactly one option - subcommand");
-    }
-    let subcommand = &data.options[0];
+    let (subcommand, options) = interaction.data().options.get_subcommand()?;
 
-    let options = match &subcommand.value {
-        CommandOptionValue::SubCommand(options) => options,
-        _ => panic!("expected option to be of type SubCommand"),
-    };
-
-    let id = match subcommand.name.as_str() {
+    let id = match subcommand {
         "by-scratch" => {
-            assert!(options.len() == 1, "expected exactly one option");
-            assert_eq!(options[0].name, "username", "expected option 'username'");
-
-            let username = match &options[0].value {
-                CommandOptionValue::String(username) => username,
-                _ => panic!("expected option 'username' to be of type String"),
-            };
+            let username: &String = options.get_option("username")?;
 
             let Some(username) = extract_username(username) else {
                 return Ok(InteractionResponse {
@@ -98,15 +83,7 @@ pub async fn run(
                 });
             }
         }
-        "by-discord" => {
-            assert!(options.len() == 1, "expected exactly one option");
-            assert_eq!(options[0].name, "user", "expected option 'user'");
-
-            match &options[0].value {
-                CommandOptionValue::User(id) => *id,
-                _ => panic!("expected option 'user' to be of type User"),
-            }
-        }
+        "by-discord" => *options.get_option("user")?,
         _ => panic!("unknown subcommand name"),
     };
 

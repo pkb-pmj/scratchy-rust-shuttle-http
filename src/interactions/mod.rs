@@ -21,7 +21,7 @@ use twilight_model::{
 
 use crate::{scratch::ScratchAPIError, state::AppState};
 
-use self::components::CustomIdError;
+use self::{components::CustomIdError, context::CommandOptionError};
 
 #[derive(Debug, Error)]
 pub enum InteractionHandlerError {
@@ -58,6 +58,8 @@ pub enum InteractionError {
     UnsupportedType(InteractionType),
     #[error("unknown command: {0}")]
     UnknownCommand(String),
+    #[error(transparent)]
+    CommandOption(#[from] CommandOptionError),
     #[error(transparent)]
     CustomId(#[from] CustomIdError),
     #[error(transparent)]

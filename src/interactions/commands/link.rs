@@ -1,9 +1,6 @@
 use twilight_mention::Mention;
 use twilight_model::{
-    application::{
-        command::{Command, CommandType},
-        interaction::application_command::CommandOptionValue,
-    },
+    application::command::{Command, CommandType},
     channel::message::{
         component::{ActionRow, Button, ButtonStyle},
         Component,
@@ -19,7 +16,7 @@ use crate::{
     database::Database,
     interactions::{
         components::code::{self, CustomId},
-        context::ApplicationCommandInteraction,
+        context::{ApplicationCommandInteraction, GetOption},
         InteractionError,
     },
     locales::Locale,
@@ -49,17 +46,7 @@ pub async fn run(
     interaction: ApplicationCommandInteraction,
     locale: Locale,
 ) -> Result<InteractionResponse, InteractionError> {
-    let username = match &interaction
-        .data()
-        .options
-        .iter()
-        .find(|option| option.name == "username")
-        .expect("option 'username' not found")
-        .value
-    {
-        CommandOptionValue::String(value) => value,
-        _ => unreachable!("expected option 'username' to be of type String"),
-    };
+    let username: &String = interaction.data().options.get_option("username")?;
 
     let Some(mut username) = extract_username(username) else {
         return Ok(InteractionResponse {
