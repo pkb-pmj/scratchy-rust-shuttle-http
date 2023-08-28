@@ -84,8 +84,7 @@ pub async fn run(
             let embed = user
                 .to_localized(locale)
                 .color(Color::Success.into())
-                .validate()
-                .expect("failed to validate embed")
+                .validate()?
                 .build();
 
             InteractionResponseDataBuilder::new().embeds([embed])

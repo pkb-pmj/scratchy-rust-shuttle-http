@@ -64,6 +64,8 @@ pub enum InteractionError {
     ScratchAPI(#[from] ScratchAPIError),
     #[error(transparent)]
     Database(#[from] sqlx::Error),
+    #[error(transparent)]
+    EmbedValidation(#[from] twilight_validate::embed::EmbedValidationError),
 }
 
 pub async fn interaction_handler(
