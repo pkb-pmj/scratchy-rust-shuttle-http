@@ -1,6 +1,7 @@
 use async_trait::async_trait;
-use oauth2::reqwest::async_http_client;
-use oauth2::TokenResponse;
+use oauth2::{
+    basic::BasicErrorResponseType, reqwest::async_http_client, RequestTokenError, TokenResponse,
+};
 use time::OffsetDateTime;
 use twilight_model::id::{marker::UserMarker, Id};
 
@@ -41,14 +42,24 @@ impl TokenClient for AppState {
         if token.expires_at < OffsetDateTime::now_utc() {
             let oauth_token: OAuthToken = token.into();
 
-            // Safe to unwrap because we assume Discord returns all the necessary fields
-            let new_token = self
+            let new_token = match self
                 .oauth_client
+                // Safe to unwrap because we assume Discord returns all the necessary fields
                 .exchange_refresh_token(&oauth_token.refresh_token().unwrap())
                 .request_async(async_http_client)
-                .await?
-                .try_into()
-                .unwrap();
+                .await
+            {
+                Ok(value) => value,
+                Err(RequestTokenError::ServerResponse(err))
+                    if matches!(err.error(), BasicErrorResponseType::InvalidGrant) =>
+                {
+                    tx.delete_token(id).await?;
+                    Err(TokenError::UserNotAuthorized)?
+                }
+                Err(err) => Err(err)?,
+            }
+            .try_into()
+            .unwrap();
 
             token = tx.write_token(id, new_token).await?;
         }
