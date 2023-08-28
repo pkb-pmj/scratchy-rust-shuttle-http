@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-use super::{timestamp, Extend};
+use super::{timestamp, trim_field, Extend};
 
 #[derive(Debug, Default)]
 pub struct User {
@@ -94,11 +94,11 @@ impl ToLocalized<EmbedBuilder> for User {
         }
 
         if let Some(about) = &self.about {
-            embed = embed.field(EmbedFieldBuilder::new(locale.user_bio(), about.to_string()));
+            embed = embed.field(EmbedFieldBuilder::new(locale.user_bio(), trim_field(about)));
         }
 
         if let Some(work) = &self.work {
-            embed = embed.field(EmbedFieldBuilder::new(locale.user_work(), work.to_string()));
+            embed = embed.field(EmbedFieldBuilder::new(locale.user_work(), trim_field(work)));
         }
 
         if let Some(stats) = &self.statistics {
