@@ -16,6 +16,7 @@ use shuttle_secrets::SecretStore;
 use interactions::{interaction_handler, register::register_commands};
 use sqlx::PgPool;
 use state::AppState;
+use tower_http::trace::TraceLayer;
 use tracing::{debug, error, info, trace, warn};
 use tracing_panic::panic_hook;
 
@@ -31,7 +32,7 @@ async fn axum(
     #[shuttle_aws_rds::Postgres(local_uri = "{secrets.database_url}")] pool: PgPool,
 ) -> shuttle_axum::ShuttleAxum {
     tracing_subscriber::fmt()
-        .with_env_filter("info,scratchy=trace")
+        .with_env_filter("info,scratchy=trace,tower_http=trace")
         .init();
     debug!("tracing initialized");
 
@@ -68,6 +69,7 @@ async fn axum(
         .route("/hello", get(hello_world))
         .route("/interactions", post(interaction_handler))
         .merge(linked_roles::router())
+        .layer(TraceLayer::new_for_http())
         .with_state(state.clone());
 
     debug!("spawning background metadata updater");
