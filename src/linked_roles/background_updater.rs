@@ -20,8 +20,11 @@ async fn background_updater(state: AppState) -> () {
 
     let start_time = OffsetDateTime::now_utc().time();
     let mut day = interval(Duration::from_secs(60 * 60 * 24));
+    day.set_missed_tick_behavior(MissedTickBehavior::Skip);
 
     loop {
+        day.tick().await;
+
         info!("starting today's background metadata update");
 
         let today = OffsetDateTime::now_utc().replace_time(start_time);
@@ -52,8 +55,6 @@ async fn background_updater(state: AppState) -> () {
         info!(
             "updated metadata ({successful} successful, {failed} failed), waiting until tomorrow",
         );
-
-        day.tick().await;
     }
 }
 
