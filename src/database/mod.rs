@@ -49,6 +49,12 @@ pub trait Database {
         id: Id<UserMarker>,
     ) -> Result<ScratchAccount, Self::Error>;
 
+    async fn transfer_linked_scratch_accounts(
+        self,
+        from: Id<UserMarker>,
+        to: Id<UserMarker>,
+    ) -> Result<Vec<String>, Self::Error>;
+
     async fn get_token(self, id: Id<UserMarker>) -> Result<Option<Token>, Self::Error>;
 
     async fn write_token(self, id: Id<UserMarker>, token: Token) -> Result<Token, Self::Error>;
@@ -177,6 +183,26 @@ where
             id: row.id.parse().unwrap(),
         })
         .fetch_one(self)
+        .await
+    }
+
+    async fn transfer_linked_scratch_accounts(
+        self,
+        from: Id<UserMarker>,
+        to: Id<UserMarker>,
+    ) -> Result<Vec<String>, Self::Error> {
+        sqlx::query!(
+            r#"
+                UPDATE scratch_accounts
+                SET id = $2
+                WHERE id = $1
+                RETURNING username
+            "#,
+            from.to_string(),
+            to.to_string(),
+        )
+        .map(|row| row.username)
+        .fetch_all(self)
         .await
     }
 
@@ -319,4 +345,41 @@ pub async fn link_account(
     tx.commit().await?;
 
     Ok(Ok(()))
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TransferError {
+    AlreadyLinkedToYou,
+    NotLinked,
+}
+
+pub async fn transfer_linked_accounts(
+    pool: &PgPool,
+    username: String,
+    id: Id<UserMarker>,
+) -> Result<Result<(Id<UserMarker>, Vec<String>), TransferError>, sqlx::Error> {
+    let mut tx = pool.begin().await?;
+
+    let already_linked = match tx.get_scratch_account(username.to_owned()).await? {
+        Some(already_linked) => {
+            if already_linked.id == id {
+                return Ok(Err(TransferError::AlreadyLinkedToYou));
+            } else {
+                already_linked
+            }
+        }
+        None => return Ok(Err(TransferError::NotLinked)),
+    };
+
+    if tx.get_discord_account(id).await?.is_none() {
+        tx.create_discord_account(id).await?;
+    }
+
+    let transferred = tx
+        .transfer_linked_scratch_accounts(already_linked.id, id)
+        .await?;
+
+    tx.commit().await?;
+
+    Ok(Ok((already_linked.id, transferred)))
 }
