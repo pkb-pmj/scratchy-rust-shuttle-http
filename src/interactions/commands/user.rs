@@ -1,3 +1,4 @@
+use tracing::debug;
 use twilight_model::{
     application::command::{Command, CommandType},
     http::interaction::{InteractionResponse, InteractionResponseType},
@@ -65,11 +66,14 @@ pub async fn run(
     let response = match api? {
         Some(api) => {
             let mut user = User::new();
+            debug!(?api);
             user.extend(api);
 
             if let Ok(Some(db)) = db {
+                debug!(?db);
                 user.extend(db);
             }
+            debug!(?user);
 
             let embed = user
                 .to_localized(locale)
