@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE scratch_accounts\n                SET id = $2\n                WHERE id = $1\n                RETURNING username\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "1208397e5f15f46944febc2b20dfd8e1bedea6b4702b81e8d134897ebfba0c8b"
+}
