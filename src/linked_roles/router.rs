@@ -89,7 +89,7 @@ async fn callback(
     // Safe to unwrap because we assume Discord returns all the necessary fields
     pool.write_token(id, token.try_into().unwrap())
         .await
-        .unwrap();
+        .unwrap(); // TODO: don't
 
     state.update_role_connection(id).await.unwrap();
 

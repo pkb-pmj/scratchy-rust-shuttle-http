@@ -113,7 +113,7 @@ pub async fn run(
     }
 
     if state.pool.get_token(author_id).await?.is_some() {
-        state.update_role_connection(author_id).await.unwrap();
+        state.update_role_connection(author_id).await.unwrap(); // TODO: don't
     }
 
     let message = format!(
